@@ -1,0 +1,33 @@
+{
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Accédez à votre espace de travail automatisé.",
+    "email": "Adresse email",
+    "password": "Mot de passe",
+    "resetPassword": "Réinitialiser",
+    "accessPlatform": "Accéder à la plateforme",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "createAccount": "Créer un compte"
+  },
+  "register": {
+    "title": "Créer un compte",
+    "subtitle": "Rejoignez notre plateforme financière intelligente.",
+    "fullName": "Nom complet",
+    "confirmPassword": "Confirmer le mot de passe",
+    "createAccount": "Créer un compte"
+  },
+  "forgetPassword": {
+    "title": "Réinitialiser le mot de passe",
+    "subtitle": "Entrez votre email pour recevoir les instructions de réinitialisation.",
+    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "backToLogin": "Retour à la connexion"
+  },
+  "tooltip": {
+    "accountCreated": "Compte créé !",
+    "loginSuccess": "Connexion réussie !",
+    "resetEmailSent": "Mail de récupération envoyé !"
+  },
+  "common": {
+    "intelligentFinancial": "Intelligent<br />financial<br />clarity."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "login": {
+    "title": "Log in",
+    "subtitle": "Access your automated workspace.",
+    "email": "Email address",
+    "password": "Password",
+    "resetPassword": "Reset password",
+    "accessPlatform": "Access platform",
+    "alreadyHaveAccount": "Already have account?",
+    "createAccount": "Create account"
+  },
+  "register": {
+    "title": "Create account",
+    "subtitle": "Join our intelligent financial platform.",
+    "fullName": "Full name",
+    "confirmPassword": "Confirm password",
+    "createAccount": "Create account"
+  },
+  "forgetPassword": {
+    "title": "Reset password",
+    "subtitle": "Enter your email to receive reset instructions.",
+    "sendResetLink": "Send reset link",
+    "backToLogin": "Back to login"
+  },
+  "tooltip": {
+    "accountCreated": "Account created!",
+    "loginSuccess": "Login successful!",
+    "resetEmailSent": "Recovery email sent!"
+  },
+  "common": {
+    "intelligentFinancial": "Intelligent<br />financial<br />clarity."
+  }
+}
