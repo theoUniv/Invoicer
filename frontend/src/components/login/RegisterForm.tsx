@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input, Tooltip } from '@/components/ui';
+import { useAppTranslation } from '@/hooks/useTranslation';
 
 export function RegisterForm() {
   const [name, setName] = useState('');
@@ -11,6 +12,7 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
   const router = useRouter();
+  const { t } = useAppTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,18 +35,18 @@ export function RegisterForm() {
   return (
     <>
       <Tooltip 
-        message="Compte créé !" 
+        message={t('tooltip.accountCreated')} 
         isVisible={showTooltip} 
       />
-      <div className="w-full max-w-[400px] p-8">
-        <h1 className="font-['Playfair_Display'] font-normal text-[3.5rem] leading-[1.1] mb-2">Create account</h1>
-        <p className="text-[#8A8580] mb-12 font-light">Join our intelligent financial platform.</p>
+      <div className="w-full max-w-[450px] p-8">
+        <h1 className="font-['Playfair_Display'] font-normal text-[3.5rem] leading-[1.1] mb-2">{t('register.title')}</h1>
+        <p className="text-[#8A8580] mb-12 font-light">{t('register.subtitle')}</p>
         
         <form onSubmit={handleSubmit}>
           <div className="mb-8">
             <Input 
               type="text" 
-              placeholder="Full name" 
+              placeholder={t('register.fullName')} 
               required 
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -53,7 +55,7 @@ export function RegisterForm() {
           <div className="mb-8">
             <Input 
               type="email" 
-              placeholder="Email address" 
+              placeholder={t('login.email')} 
               required 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -62,7 +64,7 @@ export function RegisterForm() {
           <div className="mb-8">
             <Input 
               type="password" 
-              placeholder="Password" 
+              placeholder={t('login.password')} 
               required 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -71,7 +73,7 @@ export function RegisterForm() {
           <div className="mb-8">
             <Input 
               type="password" 
-              placeholder="Confirm password" 
+              placeholder={t('register.confirmPassword')} 
               required 
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -79,10 +81,10 @@ export function RegisterForm() {
           </div>
           <div className="flex justify-between items-center mt-12">
             <a href="/login" className="text-[#8A8580] no-underline text-sm">
-              Already have account?
+              {t('login.alreadyHaveAccount')}
             </a>
             <Button variant="dark">
-              Create account
+              {t('register.createAccount')}
             </Button>
           </div>
         </form>

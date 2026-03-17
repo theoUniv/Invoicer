@@ -7,7 +7,7 @@
     "resetPassword": "Réinitialiser",
     "accessPlatform": "Accéder à la plateforme",
     "alreadyHaveAccount": "Vous avez déjà un compte ?",
-    "createAccount": "Créer un compte"
+    "createAccount": "Je n'ai pas encore de compte."
   },
   "register": {
     "title": "Créer un compte",
@@ -19,7 +19,7 @@
   "forgetPassword": {
     "title": "Réinitialiser le mot de passe",
     "subtitle": "Entrez votre email pour recevoir les instructions de réinitialisation.",
-    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "sendResetLink": "Envoyer le lien",
     "backToLogin": "Retour à la connexion"
   },
   "tooltip": {

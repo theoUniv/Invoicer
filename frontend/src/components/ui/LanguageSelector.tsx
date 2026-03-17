@@ -12,6 +12,7 @@ export function LanguageSelector() {
         variant='ghost'
         size="sm"
         onClick={() => changeLanguage('fr')}
+        className={currentLanguage === 'fr' ? 'underline' : ''}
       >
         [FR]
       </Button>
@@ -19,6 +20,7 @@ export function LanguageSelector() {
         variant='ghost'
         size="sm"
         onClick={() => changeLanguage('en')}
+        className={currentLanguage === 'en' ? 'underline' : ''}
       >
         [ENG]
       </Button>
