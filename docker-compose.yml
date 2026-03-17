@@ -16,9 +16,54 @@ services:
     networks:
       - invoicer-network
 
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: invoicer-minio
+    restart: always
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - invoicer-network
+
+  seeder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.seeder
+    container_name: invoicer-seeder
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=${MYSQL_USER:-invoicer_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-invoicer_password}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-invoicer_db}
+      - MINIO_ENDPOINT=http://minio:9000
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_started
+      minio:
+        condition: service_healthy
+    profiles:
+      - seeder # Run only when explicitly requested: docker compose run seeder
+    networks:
+      - invoicer-network
+
 networks:
   invoicer-network:
     driver: bridge
 
 volumes:
   mysql_data:
+  minio_data:

@@ -1,0 +1,22 @@
+minio:
+  endpoint: "http://minio:9000"
+  region: "us-east-1"
+  buckets:
+    raw: "raw"
+    clean: "clean"
+    curated: "curated"
+
+paths:
+  data_root: "data"
+  raw_invoices: "data/raw/invoices"
+  raw_invoices_noisy: "data/raw/invoices_noisy"
+  raw_quotes: "data/raw/quotes"
+  raw_attestations: "data/raw/attestations"
+  clean_invoices: "data/clean/invoices"
+  clean_quotes: "data/clean/quotes"
+  clean_attestations: "data/clean/attestations"
+  curated_root: "data/curated"
+  curated_companies: "data/curated/companies.json"
+  curated_invoices: "data/curated/invoices"
+  curated_quotes: "data/curated/quotes"
+  curated_attestations: "data/curated/attestations"
