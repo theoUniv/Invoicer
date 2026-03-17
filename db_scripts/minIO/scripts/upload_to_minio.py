@@ -34,6 +34,13 @@ def upload_directory_to_bucket(s3, bucket: str, local_dir: Path, prefix: str = "
         print(f"Répertoire local inexistant, ignoré : {local_dir}")
         return
 
+    # S'assurer que le bucket existe
+    try:
+        s3.head_bucket(Bucket=bucket)
+    except:
+        print(f"Création du bucket : {bucket}")
+        s3.create_bucket(Bucket=bucket)
+
     for root, _, files in os.walk(local_dir):
         for file in files:
             full_path = Path(root) / file
