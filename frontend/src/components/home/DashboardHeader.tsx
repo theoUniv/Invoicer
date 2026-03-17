@@ -33,7 +33,7 @@ const getFolderLabel = (type: FileType) => {
 const getMonthLabel = (month: string) => {
   const months: { [key: string]: string } = {
     '01': 'Janvier',
-    '02': 'Février', 
+    '02': 'Février',
     '03': 'Mars',
     '04': 'Avril',
     '05': 'Mai',
@@ -48,10 +48,10 @@ const getMonthLabel = (month: string) => {
   return months[month] || month;
 };
 
-export function DashboardHeader({ 
-  onSearchChange, 
-  onStatusFilterChange, 
-  onDateFilterChange, 
+export function DashboardHeader({
+  onSearchChange,
+  onStatusFilterChange,
+  onDateFilterChange,
   activeView = 'list',
   currentFolder,
   onBreadcrumbClick
@@ -60,14 +60,14 @@ export function DashboardHeader({
 
   if (activeView === 'folders') {
     const breadcrumbParts = [];
-    
+
     if (currentFolder) {
       breadcrumbParts.push({
         label: getFolderLabel(currentFolder.type),
         level: 'type' as const,
         folder: { type: currentFolder.type }
       });
-      
+
       if (currentFolder.year) {
         breadcrumbParts.push({
           label: currentFolder.year,
@@ -75,7 +75,7 @@ export function DashboardHeader({
           folder: { type: currentFolder.type, year: currentFolder.year }
         });
       }
-      
+
       if (currentFolder.month) {
         breadcrumbParts.push({
           label: getMonthLabel(currentFolder.month),
@@ -89,33 +89,33 @@ export function DashboardHeader({
       <div className="flex flex-col">
         <div className="mb-8">
           <h1 className="text-5xl font-serif mb-2 tracking-tight text-[#121212]">
-            {currentFolder ? 
-              (currentFolder.month ? getMonthLabel(currentFolder.month) : 
-               currentFolder.year ? currentFolder.year :
-               getFolderLabel(currentFolder.type)) : 
+            {currentFolder ?
+              (currentFolder.month ? getMonthLabel(currentFolder.month) :
+                currentFolder.year ? currentFolder.year :
+                  getFolderLabel(currentFolder.type)) :
               'Tous les documents'
             }
             {currentFolder?.year && !currentFolder.month && ` ${currentFolder.year}`}
           </h1>
           <p className="text-xs uppercase tracking-wider text-[#6B6B66]">
-            {currentFolder?.month ? 'Fichiers du mois' : 
-             currentFolder?.year ? 'Fichiers de l\'année' : 
-             currentFolder ? 'Tous les fichiers' :
-             'Navigatez dans vos documents'}
+            {currentFolder?.month ? 'Fichiers du mois' :
+              currentFolder?.year ? 'Fichiers de l\'année' :
+                currentFolder ? 'Tous les fichiers' :
+                  'Navigatez dans vos documents'}
           </p>
         </div>
-                <nav className="flex items-center gap-2 mb-6 text-xs uppercase tracking-wider text-[#6B6B66]">
-          <button 
+        <nav className="flex items-center gap-2 mb-6 text-xs uppercase tracking-wider text-[#6B6B66] z-10">
+          <button
             onClick={() => onBreadcrumbClick?.('root')}
             className="breadcrumb nav-item hover:text-[#121212] transition-colors cursor-pointer"
           >
             Tous les dossiers
           </button>
-          
+
           {breadcrumbParts.map((part, index) => (
             <span key={index}>
               <span className="mx-2">/</span>
-              <button 
+              <button
                 onClick={() => onBreadcrumbClick?.(part.level, part.folder)}
                 className="breadcrumb nav-item hover:text-[#121212] transition-colors cursor-pointer"
               >
@@ -133,7 +133,7 @@ export function DashboardHeader({
       <h1 className="font-['Playfair_Display'] text-[3.5rem] leading-none tracking-[-0.02em] text-black">
         {t('dashboard.myFiles')}
       </h1>
-      
+
       <div className="flex gap-6 items-end">
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8580]" />
@@ -144,7 +144,7 @@ export function DashboardHeader({
             onChange={(e) => onSearchChange?.(e.target.value)}
           />
         </div>
-        <select 
+        <select
           className="bg-transparent border-b border-[rgba(26,24,23,0.12)] py-2 text-sm text-[#1A1817] outline-none transition-colors focus:border-[#1A1817] w-30"
           onChange={(e) => onStatusFilterChange?.(e.target.value)}
         >
@@ -152,7 +152,7 @@ export function DashboardHeader({
           <option>{t('dashboard.paid')}</option>
           <option>{t('dashboard.pending')}</option>
         </select>
-        <select 
+        <select
           className="bg-transparent border-b border-[rgba(26,24,23,0.12)] py-2 text-sm text-[#1A1817] outline-none transition-colors focus:border-[#1A1817] w-30"
           onChange={(e) => onDateFilterChange?.(e.target.value)}
         >
