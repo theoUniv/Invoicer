@@ -11,7 +11,7 @@ fake = Faker("fr_FR")
 
 DATA_DIR = Path("data")
 RAW_INVOICES_DIR = DATA_DIR / "raw" / "invoices"
-CURATED_INVOICES_DIR = DATA_DIR / "curated" / "invoices"
+
 
 
 def load_companies(path: str = "data/curated/companies.json"):
@@ -117,8 +117,6 @@ def generate_one_invoice(companies: list, index: int, incoherent: bool = False) 
 def generate_invoices(n: int = 50, incoherent_ratio: float = 0.2) -> None:
     companies = load_companies()
     RAW_INVOICES_DIR.mkdir(parents=True, exist_ok=True)
-    CURATED_INVOICES_DIR.mkdir(parents=True, exist_ok=True)
-
     for i in range(1, n + 1):
         incoherent = random.random() < incoherent_ratio
         invoice_data = generate_one_invoice(companies, i, incoherent=incoherent)
@@ -126,11 +124,7 @@ def generate_invoices(n: int = 50, incoherent_ratio: float = 0.2) -> None:
         pdf_path = RAW_INVOICES_DIR / f"{invoice_data['invoice_number']}.pdf"
         create_invoice_pdf(invoice_data, pdf_path)
 
-        json_path = CURATED_INVOICES_DIR / f"{invoice_data['invoice_number']}.json"
-        with json_path.open("w", encoding="utf-8") as f:
-            json.dump(invoice_data, f, ensure_ascii=False, indent=2)
-
-        print(f"Généré {pdf_path} et {json_path}")
+        print(f"Généré {pdf_path}")
 
 
 if __name__ == "__main__":
