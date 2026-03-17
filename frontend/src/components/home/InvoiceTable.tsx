@@ -2,21 +2,14 @@ import { DataTable, DataTableHeader, DataTableRow, DataTableCell, DataTableHeade
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Button } from '@/components/ui';
 import { useAppTranslation } from '@/hooks/useTranslation';
-
-interface Invoice {
-  id: string;
-  date: string;
-  vendor: string;
-  amount: string;
-  status: 'paid' | 'pending';
-}
+import { FileData } from '@/lib/files';
 
 interface InvoiceTableProps {
-  invoices: Invoice[];
-  onViewInvoice?: (invoice: Invoice) => void;
+  files: FileData[];
+  onViewInvoice?: (file: FileData) => void;
 }
 
-export function InvoiceTable({ invoices, onViewInvoice }: InvoiceTableProps) {
+export function InvoiceTable({ files, onViewInvoice }: InvoiceTableProps) {
   const { t } = useAppTranslation();
 
   return (
@@ -32,28 +25,28 @@ export function InvoiceTable({ invoices, onViewInvoice }: InvoiceTableProps) {
         </DataTableRow>
       </DataTableHeader>
       <tbody>
-        {invoices.map((invoice, index) => (
+        {files.map((file, index) => (
           <DataTableRow 
             key={index}
             className="hover:bg-white/30 transition-colors"
           >
             <DataTableCell className="text-xs uppercase tracking-[0.05em] text-[#8A8580]">
-              {invoice.id}
+              {file.id}
             </DataTableCell>
-            <DataTableCell className="text-black">{invoice.date}</DataTableCell>
-            <DataTableCell className="font-medium text-black">{invoice.vendor}</DataTableCell>
+            <DataTableCell className="text-black">{file.date}</DataTableCell>
+            <DataTableCell className="font-medium text-black">{file.vendor}</DataTableCell>
             <DataTableCell className="font-['Playfair_Display'] text-lg text-black">
-              {invoice.amount}
+              {file.amount}
             </DataTableCell>
             <DataTableCell>
-              <StatusBadge status={invoice.status}>
-                {invoice.status}
+              <StatusBadge status={file.status as 'paid' | 'pending'}>
+                {file.status}
               </StatusBadge>
             </DataTableCell>
             <DataTableCell className="text-right">
               <Button
                 variant="ghost"
-                onClick={() => onViewInvoice?.(invoice)}
+                onClick={() => onViewInvoice?.(file)}
                 className='text-[#8A8580] hover:underline'
               >
                 {t('dashboard.view')}

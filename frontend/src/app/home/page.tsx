@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { DashboardContent } from '@/components/home';
-import { getFilesData, addUploadItem, updateUploadStatus, Invoice, UploadItem } from '@/lib/files';
+import { getFilesData, addUploadItem, updateUploadStatus, Invoice, UploadItem, FileData } from '@/lib/files';
 
 export default function Home() {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [files, setFiles] = useState<FileData[]>([]);
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,7 +13,7 @@ export default function Home() {
     const loadData = async () => {
       try {
         const data = await getFilesData();
-        setInvoices(data.invoices);
+        setFiles(data.files);
         setUploads(data.uploads);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -35,7 +35,7 @@ export default function Home() {
           await updateUploadStatus(processingIndex, 'done');
           const updatedData = await getFilesData();
           setUploads(updatedData.uploads);
-          setInvoices(updatedData.invoices);
+          setFiles(updatedData.files);
         }
       } catch (error) {
         console.error('Error updating upload status:', error);
@@ -74,8 +74,8 @@ export default function Home() {
     console.log('Date filter:', value);
   };
 
-  const handleViewInvoice = (invoice: Invoice) => {
-    console.log('View invoice:', invoice);
+  const handleViewInvoice = (file: FileData) => {
+    console.log('View file:', file);
   };
 
   if (loading) {
@@ -97,7 +97,7 @@ export default function Home() {
          }}>
       
       <DashboardContent
-        invoices={invoices}
+        files={files}
         uploads={uploads}
         onFileSelect={handleFileSelect}
         onSearchChange={handleSearchChange}

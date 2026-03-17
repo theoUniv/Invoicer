@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { Menu, Grid3X3, Folders } from 'lucide-react';
 
 interface ViewToggleProps {
-  activeView: 'list' | 'grid';
-  onViewChange: (view: 'list' | 'grid') => void;
+  activeView: 'list' | 'folders';
+  onViewChange: (view: 'list' | 'folders') => void;
 }
 
 export function ViewToggle({ activeView, onViewChange }: ViewToggleProps) {
@@ -24,11 +24,11 @@ export function ViewToggle({ activeView, onViewChange }: ViewToggleProps) {
       </button>
       <button
         className={`p-2 rounded transition-colors cursor-pointer ${
-          activeView === 'grid' 
+          activeView === 'folders' 
             ? 'text-[#1A1817]' 
             : 'text-[#8A8580] hover:text-[#1A1817]'
         }`}
-        onClick={() => onViewChange('grid')}
+        onClick={() => onViewChange('folders')}
         title="Folders view"
       >
         <Folders size={18} />

@@ -1,12 +1,16 @@
 import filesData from '../data/files.json';
 import { MinIOService } from './minio';
 
-export interface Invoice {
+export type FileType = 'invoice' | 'contract' | 'quote' | 'expense';
+
+export interface FileData {
   id: string;
   date: string;
   vendor: string;
   amount: string;
-  status: 'paid' | 'pending';
+  status: string;
+  type: FileType;
+  fileName: string;
 }
 
 export interface UploadItem {
@@ -15,8 +19,16 @@ export interface UploadItem {
 }
 
 export interface FilesData {
-  invoices: Invoice[];
+  files: FileData[];
   uploads: UploadItem[];
+}
+
+export interface Invoice {
+  id: string;
+  date: string;
+  vendor: string;
+  amount: string;
+  status: 'paid' | 'pending';
 }
 
 let currentData: FilesData = filesData as FilesData;
@@ -63,19 +75,16 @@ export async function updateUploadStatus(index: number, status: 'processing' | '
         // TOUT MODIFIER ICI AVEC LES VALEURS DE L'OCR / RANDOM TEMPORAIRE POUR SIMULATION
         if (status === 'done') {
           const completedUpload = currentData.uploads[index];
-          const newInvoice: Invoice = {
-            id: `#ANT-${String(Date.now()).slice(-4)}`,
-            date: new Date().toLocaleDateString('en-US', { 
-              month: 'short', 
-              day: 'numeric', 
-              year: 'numeric' 
-            }).replace(',', ''),
-            vendor: completedUpload.name.replace(/\.[^/.]+$/, ""),
-            amount: `$${(Math.random() * 1000 + 50).toFixed(2)}`,
-            status: Math.random() > 0.5 ? 'paid' : 'pending'
+          const newFile: FileData = {
+            id: `#${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).replace(',', ''),
+            vendor: 'Unknown Vendor',
+            amount: `$${(Math.random() * 1000).toFixed(2)}`,
+            status: 'pending',
+            type: 'invoice',
+            fileName: completedUpload.name
           };
-          
-          currentData.invoices = [newInvoice, ...currentData.invoices];
+          currentData.files.push(newFile);
           currentData.uploads.splice(index, 1);
         }
       }
