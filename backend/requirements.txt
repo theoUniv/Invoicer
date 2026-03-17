@@ -1,0 +1,8 @@
+pytesseract
+opencv-python
+pillow
+numpy
+pdf2image
+spacy
+minio
+python-dotenv
