@@ -74,15 +74,6 @@ def main():
         prefix="invoices",
     )
 
-    # Gold / Curated -> JSON structurés
-    upload_directory_to_bucket(
-        s3,
-        bucket=minio_cfg["buckets"]["curated"],
-        local_dir=Path(paths["curated_invoices"]),
-        prefix="invoices",
-    )
-
-
 if __name__ == "__main__":
     main()
 
