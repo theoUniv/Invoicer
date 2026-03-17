@@ -29,5 +29,31 @@
   },
   "common": {
     "intelligentFinancial": "Intelligent<br />financial<br />clarity."
+  },
+  "dashboard": {
+    "uploadDocument": "Télécharger Document",
+    "acceptedFormats": "PDF, JPG, PNG acceptés",
+    "processingQueue": "File d'attente",
+    "noFilesInQueue": "Aucun fichier en attente de traitement",
+    "myFiles": "Mes fichiers",
+    "overview": "Aperçu",
+    "settings": "Paramètres",
+    "signOut": "Se déconnecter",
+    "searchPlaceholder": "Rechercher fournisseur ou ID...",
+    "allStatus": "Tous les statuts",
+    "paid": "Payé",
+    "pending": "En attente",
+    "thisMonth": "Ce mois",
+    "lastMonth": "Le mois dernier",
+    "yearToDate": "Année en cours",
+    "invoiceId": "ID Facture",
+    "date": "Date",
+    "vendor": "Fournisseur",
+    "amount": "Montant",
+    "status": "Statut",
+    "action": "Action",
+    "view": "Voir",
+    "dragDropText": "Glissez-déposez une facture ici ou",
+    "selectFile": "Choisir un fichier"
   }
 }

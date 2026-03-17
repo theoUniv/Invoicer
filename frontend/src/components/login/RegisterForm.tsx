@@ -16,7 +16,6 @@ export function RegisterForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle registration logic here
     setShowTooltip(true);
     setTimeout(() => {
       router.push('/login');

@@ -7,7 +7,7 @@
     "resetPassword": "Reset password",
     "accessPlatform": "Access platform",
     "alreadyHaveAccount": "Already have account?",
-    "createAccount": "Create account"
+    "createAccount": "I don't have an account yet."
   },
   "register": {
     "title": "Create account",
@@ -29,5 +29,31 @@
   },
   "common": {
     "intelligentFinancial": "Intelligent<br />financial<br />clarity."
+  },
+  "dashboard": {
+    "uploadDocument": "Upload Document",
+    "acceptedFormats": "PDF, JPG, PNG accepted",
+    "processingQueue": "Processing Queue",
+    "noFilesInQueue": "No files in processing queue",
+    "myFiles": "My files",
+    "overview": "Overview",
+    "settings": "Settings",
+    "signOut": "Sign Out",
+    "searchPlaceholder": "Search vendor or ID...",
+    "allStatus": "All Status",
+    "paid": "Paid",
+    "pending": "Pending",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "yearToDate": "Year to Date",
+    "invoiceId": "Invoice ID",
+    "date": "Date",
+    "vendor": "Vendor",
+    "amount": "Amount",
+    "status": "Status",
+    "action": "Action",
+    "view": "View",
+    "dragDropText": "Drag & drop invoice here or",
+    "selectFile": "Select File"
   }
 }

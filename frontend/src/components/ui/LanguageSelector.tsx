@@ -7,7 +7,7 @@ export function LanguageSelector() {
   const { changeLanguage, currentLanguage } = useAppTranslation();
 
   return (
-    <div className="fixed top-12 right-12 z-40 flex gap-2">
+    <div className="fixed top-8 right-8 z-40 flex gap-2">
       <Button
         variant='ghost'
         size="sm"

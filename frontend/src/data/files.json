@@ -1,0 +1,12 @@
+{
+  "invoices": [
+    { "id": "#ANT-0942", "date": "Oct 24, 2023", "vendor": "Stripe Inc.", "amount": "$420.00", "status": "paid" },
+    { "id": "#ANT-0943", "date": "Oct 26, 2023", "vendor": "Figma", "amount": "$144.00", "status": "pending" },
+    { "id": "#ANT-0944", "date": "Oct 28, 2023", "vendor": "Vercel Web Services", "amount": "$85.50", "status": "paid" },
+    { "id": "#ANT-0945", "date": "Nov 01, 2023", "vendor": "WeWork Guatemala", "amount": "$1,200.00", "status": "pending" },
+    { "id": "#ANT-0946", "date": "Nov 02, 2023", "vendor": "Adobe Creative Cloud", "amount": "$54.99", "status": "paid" }
+  ],
+  "uploads": [
+    { "name": "INV-2023-11.pdf", "status": "processing" }
+  ]
+}

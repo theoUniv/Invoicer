@@ -2,6 +2,7 @@
 
 import { Button, Input, Tooltip } from '@/components/ui';
 import { useAppTranslation } from '@/hooks/useTranslation';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -60,17 +61,19 @@ export function LoginForm() {
           </div>
           <div className="flex justify-between items-center mt-12">
             <div className="flex flex-col gap-2">
-              <a href="/forget-password" className="text-[#8A8580] no-underline text-sm">
+              <Link href="/forget-password" className="text-[#8A8580] no-underline text-sm hover:underline">
                 {t('login.resetPassword')}
-              </a>
+              </Link>
             </div>
             <Button variant="dark">
               {t('login.accessPlatform')}
             </Button>
           </div>
-          <a href="/register" className="text-[#8A8580] no-underline text-sm">
-            {t('login.createAccount')}
-          </a>
+          <div className="flex justify-center mt-4">
+            <Link href="/register" className="text-[#8A8580] no-underline text-sm hover:underline">
+              {t('login.createAccount')}
+            </Link>
+          </div>
         </form>
       </div>
     </>
