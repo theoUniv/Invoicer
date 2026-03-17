@@ -4,3 +4,5 @@ pillow
 numpy
 pdf2image
 spacy
+minio
+python-dotenv
