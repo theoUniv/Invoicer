@@ -1,0 +1,24 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: invoicer-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-invoicer_db}
+      MYSQL_USER: ${MYSQL_USER:-invoicer_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-invoicer_password}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db_scripts/Invoicer_CREATE_TABLE.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - invoicer-network
+
+networks:
+  invoicer-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
