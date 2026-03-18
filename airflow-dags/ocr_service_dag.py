@@ -45,6 +45,8 @@ with DAG(
     upload_raw = BashOperator(
         task_id='upload_raw',
         bash_command='python3 /opt/airflow/backend/ocr_service/upload_to_minio.py --file "{{ dag_run.conf["file_path"] }}" --bucket raw',
+        cwd='/opt/airflow',
+        env={"PYTHONPATH": "/opt/airflow/backend/ocr_service"}
     )
 
     # Task 3: OCR Processing (Raw -> Silver)
@@ -52,6 +54,8 @@ with DAG(
     ocr_process = BashOperator(
         task_id='ocr_process',
         bash_command='python3 /opt/airflow/backend/ocr_service/ocr_processor.py "{{ ti.xcom_pull(task_ids="prepare_metadata", key="filename") }}"',
+        cwd='/opt/airflow',
+        env={"PYTHONPATH": "/opt/airflow/backend/ocr_service"}
     )
 
     # Task 4: NLP Enrichment (Silver -> Gold)
@@ -59,12 +63,16 @@ with DAG(
     nlp_enrichment = BashOperator(
         task_id='nlp_enrichment',
         bash_command='python3 /opt/airflow/backend/ocr_service/nlp_processor.py "{{ ti.xcom_pull(task_ids="prepare_metadata", key="json_name") }}"',
+        cwd='/opt/airflow',
+        env={"PYTHONPATH": "/opt/airflow/backend/ocr_service"}
     )
 
     # Task 5: Database Insertion (Gold -> MySQL)
     insert_db = BashOperator(
         task_id='insert_db',
         bash_command='python3 /opt/airflow/backend/ocr_service/insert_db.py "{{ ti.xcom_pull(task_ids="prepare_metadata", key="json_name") }}"',
+        cwd='/opt/airflow',
+        env={"PYTHONPATH": "/opt/airflow/backend/ocr_service"}
     )
 
     prepare_meta >> upload_raw >> ocr_process >> nlp_enrichment >> insert_db
