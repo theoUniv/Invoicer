@@ -19,6 +19,7 @@ def get_s3_client(minio_cfg):
     access_key = os.getenv("MINIO_ROOT_USER", minio_cfg.get("access_key"))
     secret_key = os.getenv("MINIO_ROOT_PASSWORD", minio_cfg.get("secret_key"))
     endpoint = os.getenv("MINIO_ENDPOINT", minio_cfg.get("endpoint"))
+    print(f"DEBUG: Using MinIO endpoint: {endpoint}")
     
     return boto3.client(
         "s3",

@@ -47,7 +47,7 @@ services:
       - MYSQL_USER=${MYSQL_USER:-invoicer_user}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-invoicer_password}
       - MYSQL_DATABASE=${MYSQL_DATABASE:-invoicer_db}
-      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ENDPOINT=http://invoicer-minio:9000
       - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin123}
     volumes:
