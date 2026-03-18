@@ -46,7 +46,12 @@ with DAG(
         task_id='upload_raw',
         bash_command='python3 /opt/airflow/backend/ocr_service/upload_to_minio.py --file "{{ dag_run.conf["file_path"] }}" --bucket raw',
         cwd='/opt/airflow',
-        env={"PYTHONPATH": "/opt/airflow/backend/ocr_service"}
+        env={
+            "PYTHONPATH": "/opt/airflow/backend/ocr_service",
+            "MINIO_ROOT_USER": os.getenv("MINIO_ROOT_USER", "minioadmin"),
+            "MINIO_ROOT_PASSWORD": os.getenv("MINIO_ROOT_PASSWORD", "minioadmin123"),
+            "MINIO_ENDPOINT": os.getenv("MINIO_ENDPOINT", "http://minio:9000")
+        }
     )
 
     # Task 3: OCR Processing (Raw -> Silver)
@@ -55,7 +60,12 @@ with DAG(
         task_id='ocr_process',
         bash_command='python3 /opt/airflow/backend/ocr_service/ocr_processor.py "{{ ti.xcom_pull(task_ids="prepare_metadata", key="filename") }}"',
         cwd='/opt/airflow',
-        env={"PYTHONPATH": "/opt/airflow/backend/ocr_service"}
+        env={
+            "PYTHONPATH": "/opt/airflow/backend/ocr_service",
+            "MINIO_ROOT_USER": os.getenv("MINIO_ROOT_USER", "minioadmin"),
+            "MINIO_ROOT_PASSWORD": os.getenv("MINIO_ROOT_PASSWORD", "minioadmin123"),
+            "MINIO_ENDPOINT": os.getenv("MINIO_ENDPOINT", "http://minio:9000")
+        }
     )
 
     # Task 4: NLP Enrichment (Silver -> Gold)
@@ -64,7 +74,12 @@ with DAG(
         task_id='nlp_enrichment',
         bash_command='python3 /opt/airflow/backend/ocr_service/nlp_processor.py "{{ ti.xcom_pull(task_ids="prepare_metadata", key="json_name") }}"',
         cwd='/opt/airflow',
-        env={"PYTHONPATH": "/opt/airflow/backend/ocr_service"}
+        env={
+            "PYTHONPATH": "/opt/airflow/backend/ocr_service",
+            "MINIO_ROOT_USER": os.getenv("MINIO_ROOT_USER", "minioadmin"),
+            "MINIO_ROOT_PASSWORD": os.getenv("MINIO_ROOT_PASSWORD", "minioadmin123"),
+            "MINIO_ENDPOINT": os.getenv("MINIO_ENDPOINT", "http://minio:9000")
+        }
     )
 
     # Task 5: Database Insertion (Gold -> MySQL)
@@ -72,7 +87,17 @@ with DAG(
         task_id='insert_db',
         bash_command='python3 /opt/airflow/backend/ocr_service/insert_db.py "{{ ti.xcom_pull(task_ids="prepare_metadata", key="json_name") }}"',
         cwd='/opt/airflow',
-        env={"PYTHONPATH": "/opt/airflow/backend/ocr_service"}
+        env={
+            "PYTHONPATH": "/opt/airflow/backend/ocr_service",
+            "MYSQL_HOST": os.getenv("MYSQL_HOST", "db"),
+            "MYSQL_USER": os.getenv("MYSQL_USER", "invoicer_user"),
+            "MYSQL_PASSWORD": os.getenv("MYSQL_PASSWORD", "invoicer_password"),
+            "MYSQL_DATABASE": os.getenv("MYSQL_DATABASE", "invoicer_db"),
+            "MYSQL_PORT": os.getenv("MYSQL_PORT", "3306"),
+            "MINIO_ENDPOINT": os.getenv("MINIO_ENDPOINT", "http://minio:9000"),
+            "MINIO_ROOT_USER": os.getenv("MINIO_ROOT_USER", "minioadmin"),
+            "MINIO_ROOT_PASSWORD": os.getenv("MINIO_ROOT_PASSWORD", "minioadmin123")
+        }
     )
 
     prepare_meta >> upload_raw >> ocr_process >> nlp_enrichment >> insert_db

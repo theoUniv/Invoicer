@@ -1,5 +1,7 @@
 minio:
   endpoint: "http://72.60.37.180:9000"
+  access_key: "minioadmin"
+  secret_key: "minioadmin123"
   region: "us-east-1"
   buckets:
     raw: "raw"
