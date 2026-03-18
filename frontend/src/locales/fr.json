@@ -7,7 +7,7 @@
     "resetPassword": "Réinitialiser",
     "accessPlatform": "Accéder à la plateforme",
     "alreadyHaveAccount": "Vous avez déjà un compte ?",
-    "createAccount": "Créer un compte"
+    "createAccount": "Je n'ai pas encore de compte."
   },
   "register": {
     "title": "Créer un compte",
@@ -19,15 +19,198 @@
   "forgetPassword": {
     "title": "Réinitialiser le mot de passe",
     "subtitle": "Entrez votre email pour recevoir les instructions de réinitialisation.",
-    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "sendResetLink": "Envoyer le lien",
     "backToLogin": "Retour à la connexion"
   },
   "tooltip": {
     "accountCreated": "Compte créé !",
     "loginSuccess": "Connexion réussie !",
-    "resetEmailSent": "Mail de récupération envoyé !"
+    "resetEmailSent": "Mail de récupération envoyé !",
+    "invoiceAdded": "Facture ajoutée !",
+    "uploadComplete": "Envoi terminé !"
   },
   "common": {
     "intelligentFinancial": "Intelligent<br />financial<br />clarity."
+  },
+  "dashboard": {
+    "uploadDocument": "Télécharger Document",
+    "acceptedFormats": "PDF, JPG, PNG acceptés",
+    "processingQueue": "File d'attente",
+    "noFilesInQueue": "Aucun fichier en attente de traitement",
+    "myFiles": "Mes fichiers",
+    "overview": "Aperçu",
+    "settings": "Paramètres",
+    "signOut": "Se déconnecter",
+    "searchPlaceholder": "Rechercher fournisseur ou ID...",
+    "allStatus": "Tous les statuts",
+    "paid": "Payé",
+    "pending": "En attente",
+    "thisMonth": "Ce mois",
+    "lastMonth": "Le mois dernier",
+    "yearToDate": "Année en cours",
+    "invoiceId": "ID Facture",
+    "date": "Date",
+    "vendor": "Fournisseur",
+    "amount": "Montant",
+    "status": "Statut",
+    "action": "Action",
+    "view": "Voir",
+    "dragDropText": "Glissez-déposez une facture ici ou",
+    "selectFile": "Choisir un fichier",
+    "folders": {
+      "invoices": "Factures",
+      "contracts": "Contrats",
+      "quotes": "Devis",
+      "expenses": "Notes de frais",
+      "documents": "Documents",
+      "allFiles": "Tous les fichiers",
+      "file": "fichier",
+      "files": "fichiers",
+      "noFiles": "Aucun fichier",
+      "emptyFolder": "Ce dossier est vide",
+      "fileDetails": "Détails du fichier",
+      "fileType": "Type",
+      "fileId": "ID",
+      "fileDate": "Date",
+      "fileVendor": "Vendeur",
+      "fileAmount": "Montant",
+      "fileStatus": "Statut",
+      "download": "Télécharger",
+      "delete": "Supprimer",
+      "view": "Voir",
+      "contextMenu": {
+        "view": "Voir",
+        "download": "Télécharger",
+        "delete": "Supprimer"
+      },
+      "confirmDelete": "Êtes-vous sûr de vouloir supprimer \"{fileName}\" ?",
+      "downloadSimulated": "Téléchargement de {fileName} simulé",
+      "deleteSimulated": "Suppression de {fileName} simulée",
+      "descriptions": {
+        "monthFiles": "Fichiers du mois",
+        "yearFiles": "Fichiers de l'année",
+        "allTypeFiles": "Tous les fichiers",
+        "browseDocuments": "Naviguez dans vos documents",
+        "overviewInDevelopment": "Cette page est en cours de développement. Revenez bientôt pour découvrir les fonctionnalités d'analyse et de reporting."
+      },
+      "months": {
+        "01": "Janvier",
+        "02": "Février",
+        "03": "Mars",
+        "04": "Avril",
+        "05": "Mai",
+        "06": "Juin",
+        "07": "Juillet",
+        "08": "Août",
+        "09": "Septembre",
+        "10": "Octobre",
+        "11": "Novembre",
+        "12": "Décembre"
+      }
+    },
+    "kpis": {
+      "totalDocuments": "Total des documents",
+      "totalCompanies": "Entreprises uniques",
+      "totalAmount": "Montant total",
+      "paidInvoices": "Factures payées",
+      "pendingInvoices": "En attente",
+      "documents": "documents",
+      "companies": "entreprises",
+      "amount": "montant total",
+      "pending": "en attente"
+    }
+  },
+  "landing": {
+    "hero": {
+      "liveBadge": "Invoicer is live",
+      "title": "L'intelligence financière,<br /><span class=\"italic\">sans l'effort.</span>",
+      "subtitle": "Automatisez la saisie de vos factures, réconciliez vos paiements et obtenez une vue claire de votre trésorerie avec une précision chirurgicale grâce à notre IA.",
+      "startTrial": "Commencer l'essai",
+      "discoverProduct": "Découvrir le produit"
+    },
+    "header": {
+      "ecosystem": "Ecosystème",
+      "features": "Fonctionnalités",
+      "interface": "Interface",
+      "space": "Espace",
+      "login": "Se connecter",
+      "register": "S'inscrire"
+    },
+    "footer": {
+      "description": "Le standard de la gestion de factures alimenté par l'intelligence artificielle. Édité à Paris.",
+      "product": "Produit",
+      "company": "Entreprise",
+      "legal": "Légal",
+      "aiExtraction": "Extraction IA",
+      "approvalWorkflows": "Workflows d'approbation",
+      "supplierPayments": "Paiement fournisseurs",
+      "erpIntegrations": "Intégrations ERP",
+      "about": "À propos",
+      "careers": "Carrières",
+      "press": "Presse",
+      "contact": "Contact",
+      "privacy": "Confidentialité",
+      "termsOfUse": "Conditions d'utilisation",
+      "security": "Sécurité",
+      "copyright": "© {year} Invoicer Technologies. Tous droits réservés.",
+      "linkedin": "LinkedIn"
+    },
+    "teams": {
+      "usedBy": "Utilisé par des équipes d'exception"
+    },
+    "features": {
+      "title": "Tous vos outils clés,<br />parfaitement synchronisés.",
+      "badge": "App Store",
+      "subtitle": "Connectez votre<br />stack financière.",
+      "description": "Aura s'intègre nativement avec toutes les applications déjà présentes dans votre flux de travail comptable. Fini les exports CSV fastidieux, vos données voyagent en temps réel, garantissant une réconciliation parfaite.",
+      "seeIntegrations": "Voir les intégrations"
+    },
+    "cta": {
+      "title": "Aperçu de l'interface",
+      "invoicesQueue": "File d'attente des factures",
+      "vendor": "Fournisseur",
+      "date": "Date",
+      "amount": "Montant",
+      "status": "Statut",
+      "extracted": "Extrait",
+      "paid": "Payé",
+      "processing": "En cours",
+      "data": {
+        "stripe": {
+          "name": "Stripe Inc.",
+          "date": "24 oct. 2023",
+          "amount": "420,00 €"
+        },
+        "adobe": {
+          "name": "Adobe Creative Cloud",
+          "date": "02 nov. 2023",
+          "amount": "54,99 €"
+        },
+        "unseen": {
+          "name": "Unseen Studio",
+          "date": "05 nov. 2023",
+          "amount": "8 500,00 €"
+        }
+      }
+    },
+    "finalCTA": {
+      "title": "Prêt à clarifier<br />votre gestion financière ?",
+      "subtitle": "Rejoignez les entreprises qui gagnent des heures chaque semaine grâce à l'automatisation comptable par Invoicer.",
+      "createWorkspace": "Créer un espace de travail"
+    },
+    "interface": {
+      "preciseExtraction": {
+        "title": "Extraction précise",
+        "description": "Notre modèle d'IA propriétaire lit vos factures comme un humain. Montants, TVA, fournisseurs, dates : tout est extrait avec une précision de 99.9%, sans aucun template préalable."
+      },
+      "anomalyDetection": {
+        "title": "Détection d'anomalies",
+        "description": "Invoicer compare instantanément chaque nouvelle facture avec votre historique. Doublons potentiels, variations de prix inhabituelles ou IBAN suspects sont signalés avant paiement."
+      },
+      "legalArchiving": {
+        "title": "Archivage légal",
+        "description": "Chaque document traité est automatiquement classé, indexé et stocké dans un coffre-fort numérique conforme aux exigences fiscales européennes."
+      }
+    }
   }
 }

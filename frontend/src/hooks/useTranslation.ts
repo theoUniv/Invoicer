@@ -1,16 +1,16 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
-import { i18n } from '@/i18n';
+import { useTranslationStore } from '@/stores/translationStore';
+import { useEffect } from 'react';
 
 export function useAppTranslation() {
   const { t } = useTranslation();
-  
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
-  };
+  const { currentLanguage, changeLanguage, syncWithI18n } = useTranslationStore();
 
-  const currentLanguage = i18n.language;
+  useEffect(() => {
+    syncWithI18n();
+  }, [syncWithI18n]);
 
   return {
     t,
