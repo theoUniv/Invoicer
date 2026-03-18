@@ -107,6 +107,17 @@
         "11": "November",
         "12": "December"
       }
+    },
+    "kpis": {
+      "totalDocuments": "Total documents",
+      "totalCompanies": "Unique companies",
+      "totalAmount": "Total amount",
+      "paidInvoices": "Paid invoices",
+      "pendingInvoices": "Pending",
+      "documents": "documents",
+      "companies": "companies",
+      "amount": "total amount",
+      "pending": "pending"
     }
   }
 }
