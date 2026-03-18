@@ -12,9 +12,9 @@ load_dotenv()
 def get_db_connection():
     try:
         return mysql.connector.connect(
-            host='72.60.37.180',
-            user="invoicer_user",
-            password='invoicer_password',
+            host=os.getenv('MYSQL_HOST', 'localhost'),
+            user=os.getenv('MYSQL_USER', 'invoicer_user'),
+            password=os.getenv('MYSQL_PASSWORD', 'invoicer_password'),
             database=os.getenv('MYSQL_DATABASE', 'invoicer_db'),
             port=int(os.getenv('MYSQL_PORT', 3306))
         )

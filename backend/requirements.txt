@@ -7,3 +7,4 @@ spacy
 minio
 python-dotenv
 mysql-connector-python
+PyYAML
