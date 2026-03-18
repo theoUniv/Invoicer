@@ -69,7 +69,10 @@ services:
     environment:
       - PORT=3001
       - MYSQL_HOST=db
-      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin123}
+      - DATABASE_URL=mysql://${MYSQL_USER:-invoicer_user}:${MYSQL_PASSWORD:-invoicer_password}@db:3306/${MYSQL_DATABASE:-invoicer_db}
     ports:
       - "3001:3001"
     depends_on:
