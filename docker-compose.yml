@@ -111,6 +111,8 @@ services:
       postgres:
         condition: service_started
     environment:
+      - AIRFLOW__CORE__FERNET_KEY=89_vI046z3pXNAtGAs4Hw5bJ1qY4oO8b1J-qA3U3nE0=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=secret-key-123
       - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${AIRFLOW_DB_USER:-airflow}:${AIRFLOW_DB_PASSWORD:-airflow}@postgres/${AIRFLOW_DB:-airflow}
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
@@ -147,6 +149,8 @@ services:
       postgres:
         condition: service_started
     environment:
+      - AIRFLOW__CORE__FERNET_KEY=89_vI046z3pXNAtGAs4Hw5bJ1qY4oO8b1J-qA3U3nE0=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=secret-key-123
       - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${AIRFLOW_DB_USER:-airflow}:${AIRFLOW_DB_PASSWORD:-airflow}@postgres/${AIRFLOW_DB:-airflow}
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
