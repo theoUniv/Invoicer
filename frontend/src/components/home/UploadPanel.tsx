@@ -23,36 +23,23 @@ interface UploadPanelProps {
   };
 }
 
-const getFolderLabel = (type: FileType) => {
+const getFolderLabel = (type: FileType, t: any) => {
   switch (type) {
     case 'invoice':
-      return 'Factures';
+      return t('dashboard.folders.invoices');
     case 'contract':
-      return 'Contrats';
+      return t('dashboard.folders.contracts');
     case 'quote':
-      return 'Devis';
+      return t('dashboard.folders.quotes');
     case 'expense':
-      return 'Notes de frais';
+      return t('dashboard.folders.expenses');
     default:
-      return 'Documents';
+      return t('dashboard.folders.documents');
   }
 };
 
-const getMonthLabel = (month: string) => {
-  const months: { [key: string]: string } = {
-    '01': 'Janvier',
-    '02': 'Février',
-    '03': 'Mars',
-    '04': 'Avril',
-    '05': 'Mai',
-    '06': 'Juin',
-    '07': 'Juillet',
-    '08': 'Août',
-    '09': 'Septembre',
-    '10': 'Octobre',
-    '11': 'Novembre',
-    '12': 'Décembre'
-  };
+const getMonthLabel = (month: string, t: any) => {
+  const months = t('dashboard.folders.months');
   return months[month] || month;
 };
 
@@ -192,7 +179,7 @@ export function UploadPanel({
                     />
                     <Folder className="w-4 h-4 stroke-currentColor stroke-1.5" />
                     <span className={isCurrentType && !currentFolder?.year ? 'font-medium' : ''}>
-                      {getFolderLabel(type)}
+                      {getFolderLabel(type, t)}
                     </span>
                   </div>
 
@@ -246,7 +233,7 @@ export function UploadPanel({
                                     >
                                       <ChevronRight className="w-4 h-4 rotate-90" />
                                       <span className={isCurrentMonth ? 'font-medium' : ''}>
-                                        {getMonthLabel(month)}
+                                        {getMonthLabel(month, t)}
                                       </span>
                                     </div>
                                   );

@@ -15,36 +15,23 @@ interface DashboardHeaderProps {
   onBreadcrumbClick?: (level: 'root' | 'type' | 'year' | 'month', folder?: { type: FileType; year?: string; month?: string }) => void;
 }
 
-const getFolderLabel = (type: FileType) => {
+const getFolderLabel = (type: FileType, t: any) => {
   switch (type) {
     case 'invoice':
-      return 'Factures';
+      return t('dashboard.folders.invoices');
     case 'contract':
-      return 'Contrats';
+      return t('dashboard.folders.contracts');
     case 'quote':
-      return 'Devis';
+      return t('dashboard.folders.quotes');
     case 'expense':
-      return 'Notes de frais';
+      return t('dashboard.folders.expenses');
     default:
-      return 'Documents';
+      return t('dashboard.folders.documents');
   }
 };
 
-const getMonthLabel = (month: string) => {
-  const months: { [key: string]: string } = {
-    '01': 'Janvier',
-    '02': 'Février',
-    '03': 'Mars',
-    '04': 'Avril',
-    '05': 'Mai',
-    '06': 'Juin',
-    '07': 'Juillet',
-    '08': 'Août',
-    '09': 'Septembre',
-    '10': 'Octobre',
-    '11': 'Novembre',
-    '12': 'Décembre'
-  };
+const getMonthLabel = (month: string, t: any) => {
+  const months = t('dashboard.folders.months');
   return months[month] || month;
 };
 
@@ -63,7 +50,7 @@ export function DashboardHeader({
 
     if (currentFolder) {
       breadcrumbParts.push({
-        label: getFolderLabel(currentFolder.type),
+        label: getFolderLabel(currentFolder.type, t),
         level: 'type' as const,
         folder: { type: currentFolder.type }
       });
@@ -78,7 +65,7 @@ export function DashboardHeader({
 
       if (currentFolder.month) {
         breadcrumbParts.push({
-          label: getMonthLabel(currentFolder.month),
+          label: getMonthLabel(currentFolder.month, t),
           level: 'month' as const,
           folder: currentFolder
         });
@@ -90,26 +77,26 @@ export function DashboardHeader({
         <div className="mb-8">
           <h1 className="text-5xl font-serif mb-2 tracking-tight text-[#121212]">
             {currentFolder ?
-              (currentFolder.month ? getMonthLabel(currentFolder.month) :
+              (currentFolder.month ? getMonthLabel(currentFolder.month, t) :
                 currentFolder.year ? currentFolder.year :
-                  getFolderLabel(currentFolder.type)) :
-              'Tous les documents'
+                  getFolderLabel(currentFolder.type, t)) :
+              t('dashboard.folders.allFiles')
             }
             {currentFolder?.year && !currentFolder.month && ` ${currentFolder.year}`}
           </h1>
           <p className="text-xs uppercase tracking-wider text-[#6B6B66]">
-            {currentFolder?.month ? 'Fichiers du mois' :
-              currentFolder?.year ? 'Fichiers de l\'année' :
-                currentFolder ? 'Tous les fichiers' :
-                  'Navigatez dans vos documents'}
+            {currentFolder?.month ? t('dashboard.folders.descriptions.monthFiles') :
+              currentFolder?.year ? t('dashboard.folders.descriptions.yearFiles') :
+                currentFolder ? t('dashboard.folders.descriptions.allTypeFiles') :
+                  t('dashboard.folders.descriptions.browseDocuments')}
           </p>
         </div>
-        <nav className="flex items-center gap-2 mb-6 text-xs uppercase tracking-wider text-[#6B6B66] z-10">
+        <nav className="flex items-center gap-2 mb-6 text-xs uppercase tracking-wider text-[#6B6B66] z-10 w-[80%]">
           <button
             onClick={() => onBreadcrumbClick?.('root')}
             className="breadcrumb nav-item hover:text-[#121212] transition-colors cursor-pointer"
           >
-            Tous les dossiers
+            {t('dashboard.folders.allFiles')}
           </button>
 
           {breadcrumbParts.map((part, index) => (

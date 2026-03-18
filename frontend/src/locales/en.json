@@ -54,6 +54,56 @@
     "action": "Action",
     "view": "View",
     "dragDropText": "Drag & drop invoice here or",
-    "selectFile": "Select File"
+    "selectFile": "Select File",
+    "folders": {
+      "invoices": "Invoices",
+      "contracts": "Contracts",
+      "quotes": "Quotes",
+      "expenses": "Expenses",
+      "documents": "Documents",
+      "allFiles": "All files",
+      "file": "file",
+      "files": "files",
+      "noFiles": "No files",
+      "emptyFolder": "This folder is empty",
+      "fileDetails": "File Details",
+      "fileType": "Type",
+      "fileId": "ID",
+      "fileDate": "Date",
+      "fileVendor": "Vendor",
+      "fileAmount": "Amount",
+      "fileStatus": "Status",
+      "download": "Download",
+      "delete": "Delete",
+      "view": "View",
+      "contextMenu": {
+        "view": "View",
+        "download": "Download",
+        "delete": "Delete"
+      },
+      "confirmDelete": "Are you sure you want to delete \"{fileName}\"?",
+      "downloadSimulated": "Download of {fileName} simulated",
+      "deleteSimulated": "Deletion of {fileName} simulated",
+      "descriptions": {
+        "monthFiles": "Files of the month",
+        "yearFiles": "Files of the year",
+        "allTypeFiles": "All files",
+        "browseDocuments": "Browse your documents"
+      },
+      "months": {
+        "01": "January",
+        "02": "February",
+        "03": "March",
+        "04": "April",
+        "05": "May",
+        "06": "June",
+        "07": "July",
+        "08": "August",
+        "09": "September",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+      }
+    }
   }
 }

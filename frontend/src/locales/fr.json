@@ -54,6 +54,56 @@
     "action": "Action",
     "view": "Voir",
     "dragDropText": "Glissez-déposez une facture ici ou",
-    "selectFile": "Choisir un fichier"
+    "selectFile": "Choisir un fichier",
+    "folders": {
+      "invoices": "Factures",
+      "contracts": "Contrats",
+      "quotes": "Devis",
+      "expenses": "Notes de frais",
+      "documents": "Documents",
+      "allFiles": "Tous les fichiers",
+      "file": "fichier",
+      "files": "fichiers",
+      "noFiles": "Aucun fichier",
+      "emptyFolder": "Ce dossier est vide",
+      "fileDetails": "Détails du fichier",
+      "fileType": "Type",
+      "fileId": "ID",
+      "fileDate": "Date",
+      "fileVendor": "Vendeur",
+      "fileAmount": "Montant",
+      "fileStatus": "Statut",
+      "download": "Télécharger",
+      "delete": "Supprimer",
+      "view": "Voir",
+      "contextMenu": {
+        "view": "Voir",
+        "download": "Télécharger",
+        "delete": "Supprimer"
+      },
+      "confirmDelete": "Êtes-vous sûr de vouloir supprimer \"{fileName}\" ?",
+      "downloadSimulated": "Téléchargement de {fileName} simulé",
+      "deleteSimulated": "Suppression de {fileName} simulée",
+      "descriptions": {
+        "monthFiles": "Fichiers du mois",
+        "yearFiles": "Fichiers de l'année",
+        "allTypeFiles": "Tous les fichiers",
+        "browseDocuments": "Naviguez dans vos documents"
+      },
+      "months": {
+        "01": "Janvier",
+        "02": "Février",
+        "03": "Mars",
+        "04": "Avril",
+        "05": "Mai",
+        "06": "Juin",
+        "07": "Juillet",
+        "08": "Août",
+        "09": "Septembre",
+        "10": "Octobre",
+        "11": "Novembre",
+        "12": "Décembre"
+      }
+    }
   }
 }

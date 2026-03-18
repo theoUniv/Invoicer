@@ -2,6 +2,7 @@ import { useContextMenu } from '@/components/ui/ContextMenu';
 import { FileData, FileType } from '@/lib/files';
 import { Download, Eye, File, FileText, FolderOpen, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { useAppTranslation } from '@/hooks/useTranslation';
 import { FileModal } from './FileModal';
 
 interface FolderGridProps {
@@ -23,45 +24,32 @@ const getFileIcon = (type: string) => {
   }
 };
 
-const getFolderLabel = (type: FileType) => {
+const getFolderLabel = (type: FileType, t: any) => {
   switch (type) {
     case 'invoice':
-      return 'Factures';
+      return t('dashboard.folders.invoices');
     case 'contract':
-      return 'Contrats';
+      return t('dashboard.folders.contracts');
     case 'quote':
-      return 'Devis';
+      return t('dashboard.folders.quotes');
     case 'expense':
-      return 'Notes de frais';
+      return t('dashboard.folders.expenses');
     default:
-      return 'Documents';
+      return t('dashboard.folders.documents');
   }
 };
 
-const getMonthLabel = (month: string) => {
-  const months: { [key: string]: string } = {
-    '01': 'Janvier',
-    '02': 'Février', 
-    '03': 'Mars',
-    '04': 'Avril',
-    '05': 'Mai',
-    '06': 'Juin',
-    '07': 'Juillet',
-    '08': 'Août',
-    '09': 'Septembre',
-    '10': 'Octobre',
-    '11': 'Novembre',
-    '12': 'Décembre'
-  };
+const getMonthLabel = (month: string, t: any) => {
+  const months = t('dashboard.folders.months');
   return months[month] || month;
 };
 
-const getFolderInfo = (folder: { type: FileType; year?: string; month?: string }, allFiles: FileData[]) => {
+const getFolderInfo = (folder: { type: FileType; year?: string; month?: string }, allFiles: FileData[], t: any) => {
   let label = '';
   let fileCount = 0;
   
   if (!folder.year) {
-    label = getFolderLabel(folder.type);
+    label = getFolderLabel(folder.type, t);
     fileCount = allFiles.filter(f => f.type === folder.type).length;
   } else if (!folder.month) {
     label = folder.year;
@@ -70,7 +58,7 @@ const getFolderInfo = (folder: { type: FileType; year?: string; month?: string }
       new Date(f.date).getFullYear().toString() === folder.year
     ).length;
   } else {
-    label = getMonthLabel(folder.month);
+    label = getMonthLabel(folder.month, t);
     fileCount = allFiles.filter(f => 
       f.type === folder.type && 
       new Date(f.date).getFullYear().toString() === folder.year &&
@@ -88,6 +76,7 @@ export function FolderGrid({
   onFolderSelect, 
   onViewFile 
 }: FolderGridProps) {
+  const { t } = useAppTranslation();
   const shouldShowFiles = currentFolder?.month !== undefined;
   
   const { showContextMenu, ContextMenuComponent } = useContextMenu();
@@ -99,7 +88,7 @@ export function FolderGrid({
     
     const menuItems = [
       {
-        label: 'Voir',
+        label: t('dashboard.folders.contextMenu.view'),
         icon: <Eye className="w-4 h-4" />,
         onClick: () => {
           setSelectedFile(file);
@@ -107,21 +96,21 @@ export function FolderGrid({
         }
       },
       {
-        label: 'Télécharger',
+        label: t('dashboard.folders.contextMenu.download'),
         icon: <Download className="w-4 h-4" />,
         onClick: () => {
           console.log('Télécharger:', file.fileName);
-          alert(`Téléchargement de ${file.fileName} simulé`);
+          alert(t('dashboard.folders.downloadSimulated', { fileName: file.fileName }));
         }
       },
       {
-        label: 'Supprimer',
+        label: t('dashboard.folders.contextMenu.delete'),
         icon: <Trash2 className="w-4 h-4" />,
         danger: true,
         onClick: () => {
-          if (window.confirm(`Êtes-vous sûr de vouloir supprimer "${file.fileName}" ?`)) {
+          if (window.confirm(t('dashboard.folders.confirmDelete', { fileName: file.fileName }))) {
             console.log('Supprimer:', file.fileName);
-            alert(`Suppression de ${file.fileName} simulée`);
+            alert(t('dashboard.folders.deleteSimulated', { fileName: file.fileName }));
           }
         }
       }
@@ -142,7 +131,7 @@ export function FolderGrid({
     <div className="flex-1 flex flex-col">
       <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-8">
         {subFolders.map((folder, index) => {
-          const { label, fileCount } = getFolderInfo(folder, files);
+          const { label, fileCount } = getFolderInfo(folder, files, t);
           const isCurrentFolder = currentFolder && 
             currentFolder.type === folder.type &&
             currentFolder.year === folder.year &&
@@ -165,7 +154,7 @@ export function FolderGrid({
                 {label}
               </span>
               <span className="text-xs text-[#6B6B66] uppercase">
-                {fileCount} {fileCount === 1 ? 'fichier' : 'fichiers'}
+                {fileCount} {fileCount === 1 ? t('dashboard.folders.file') : t('dashboard.folders.files')}
               </span>
             </div>
           );

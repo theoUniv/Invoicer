@@ -1,5 +1,6 @@
 import { X, Download, Trash2, Eye } from 'lucide-react';
 import { FileData } from '@/lib/files';
+import { useAppTranslation } from '@/hooks/useTranslation';
 
 interface FileModalProps {
   file: FileData | null;
@@ -9,6 +10,8 @@ interface FileModalProps {
 }
 
 export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
+  const { t } = useAppTranslation();
+  
   if (!file) return null;
 
   const handleView = () => {
@@ -17,21 +20,21 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
   };
 
   const handleDelete = () => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer "${file.fileName}" ?`)) {
+    if (window.confirm(t('dashboard.folders.confirmDelete', { fileName: file.fileName }))) {
       onDelete?.(file);
       onClose();
     }
   };
 
   const handleDownload = () => {
-    alert(`Téléchargement de ${file.fileName} simulé`);
+    alert(t('dashboard.folders.downloadSimulated', { fileName: file.fileName }));
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         <div className="flex items-center justify-between p-6 border-b border-[rgba(18,18,18,0.12)]">
-          <h2 className="text-xl font-semibold text-[#121212]">Détails du fichier</h2>
+          <h2 className="text-xl font-semibold text-[#121212]">{t('dashboard.folders.fileDetails')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-[rgba(18,18,18,0.05)] rounded-lg transition-colors"
@@ -48,33 +51,33 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
               </div>
               <div>
                 <h3 className="text-lg font-medium text-[#121212]">{file.fileName}</h3>
-                <p className="text-sm text-[#6B6B66]">Type: {file.type}</p>
+                <p className="text-sm text-[#6B6B66]">{t('dashboard.folders.fileType')}: {file.type}</p>
               </div>
             </div>
 
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B6B66]">ID:</span>
+                <span className="text-sm text-[#6B6B66]">{t('dashboard.folders.fileId')}:</span>
                 <span className="text-sm font-medium text-[#121212]">{file.id}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B6B66]">Date:</span>
+                <span className="text-sm text-[#6B6B66]">{t('dashboard.folders.fileDate')}:</span>
                 <span className="text-sm font-medium text-[#121212]">{file.date}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B6B66]">Vendeur:</span>
+                <span className="text-sm text-[#6B6B66]">{t('dashboard.folders.fileVendor')}:</span>
                 <span className="text-sm font-medium text-[#121212]">{file.vendor}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B6B66]">Montant:</span>
+                <span className="text-sm text-[#6B6B66]">{t('dashboard.folders.fileAmount')}:</span>
                 <span className="text-sm font-medium text-[#121212]">{file.amount}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B6B66]">Statut:</span>
+                <span className="text-sm text-[#6B6B66]">{t('dashboard.folders.fileStatus')}:</span>
                 <span className={`text-sm font-medium ${
                   file.status === 'paid' ? 'text-green-600' : 'text-orange-600'
                 }`}>
-                  {file.status === 'paid' ? 'Payé' : 'En attente'}
+                  {file.status === 'paid' ? t('dashboard.paid') : t('dashboard.pending')}
                 </span>
               </div>
             </div>
@@ -87,21 +90,21 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#121212] text-white rounded-lg hover:bg-[#2A2A2A] transition-colors"
           >
             <Eye className="w-4 h-4" />
-            <span className="text-sm font-medium">Voir</span>
+            <span className="text-sm font-medium">{t('dashboard.folders.view')}</span>
           </button>
           <button
             onClick={handleDownload}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-[#121212] text-[#121212] rounded-lg hover:bg-[#121212] hover:text-white transition-colors"
           >
             <Download className="w-4 h-4" />
-            <span className="text-sm font-medium">Télécharger</span>
+            <span className="text-sm font-medium">{t('dashboard.folders.download')}</span>
           </button>
           <button
             onClick={handleDelete}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-colors"
           >
             <Trash2 className="w-4 h-4" />
-            <span className="text-sm font-medium">Supprimer</span>
+            <span className="text-sm font-medium">{t('dashboard.folders.delete')}</span>
           </button>
         </div>
       </div>
