@@ -73,6 +73,8 @@ services:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin123}
       - DATABASE_URL=mysql://${MYSQL_USER:-invoicer_user}:${MYSQL_PASSWORD:-invoicer_password}@db:3306/${MYSQL_DATABASE:-invoicer_db}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
     ports:
       - "3001:3001"
     depends_on:
