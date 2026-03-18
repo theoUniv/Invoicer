@@ -1,9 +1,9 @@
 import { UploadArea } from '@/components/ui/UploadArea';
-import { EmptyState } from '@/components/ui';
+import { EmptyState, Tooltip } from '@/components/ui';
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { ChevronRight, Folder, Upload } from 'lucide-react';
 import { FileData, FileType } from '@/lib/files';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface UploadItem {
   name: string;
@@ -13,6 +13,7 @@ interface UploadItem {
 interface UploadPanelProps {
   uploads: UploadItem[];
   onFileSelect: (file: File) => void;
+  onUploadComplete?: () => void;
   showTree?: boolean;
   files?: FileData[];
   onFolderSelect?: (folder: { type: FileType; year?: string; month?: string } | undefined) => void;
@@ -69,6 +70,7 @@ const getMonthsFromFiles = (files: FileData[], year: string, type: FileType) => 
 export function UploadPanel({
   uploads,
   onFileSelect,
+  onUploadComplete,
   showTree = false,
   files = [],
   onFolderSelect,
@@ -77,6 +79,32 @@ export function UploadPanel({
   const { t } = useAppTranslation();
   const [expandedTypes, setExpandedTypes] = useState<Set<FileType>>(new Set());
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipMessage, setTooltipMessage] = useState('');
+
+  const showTooltipMessage = (messageKey: string) => {
+    setTooltipMessage(t(messageKey));
+    setShowTooltip(true);
+  };
+
+  const handleFileSelect = (file: File) => {
+    onFileSelect(file);
+    showTooltipMessage('tooltip.invoiceAdded');
+  };
+
+  const handleUploadComplete = () => {
+    showTooltipMessage('tooltip.uploadComplete');
+    onUploadComplete?.();
+  };
+
+  useEffect(() => {
+    if (showTooltip) {
+      const timer = setTimeout(() => {
+        setShowTooltip(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showTooltip]);
 
   const toggleType = (type: FileType) => {
     const newExpanded = new Set(expandedTypes);
@@ -120,6 +148,10 @@ export function UploadPanel({
 
   return (
     <aside className="w-80 flex-shrink-0 flex flex-col gap-6">
+      <Tooltip
+        message={tooltipMessage}
+        isVisible={showTooltip}
+      />
       <div>
         <h2 className="font-['Playfair_Display'] text-2xl leading-tight tracking-[-0.02em] mb-2 text-black">
           {t('dashboard.uploadDocument')}
@@ -129,7 +161,7 @@ export function UploadPanel({
         </div>
       </div>
 
-      <UploadArea onFileSelect={onFileSelect} />
+      <UploadArea onFileSelect={handleFileSelect} />
 
       {!showTree && (
         <div className="mt-8">

@@ -25,7 +25,9 @@
   "tooltip": {
     "accountCreated": "Compte créé !",
     "loginSuccess": "Connexion réussie !",
-    "resetEmailSent": "Mail de récupération envoyé !"
+    "resetEmailSent": "Mail de récupération envoyé !",
+    "invoiceAdded": "Facture ajoutée !",
+    "uploadComplete": "Envoi terminé !"
   },
   "common": {
     "intelligentFinancial": "Intelligent<br />financial<br />clarity."
@@ -88,7 +90,8 @@
         "monthFiles": "Fichiers du mois",
         "yearFiles": "Fichiers de l'année",
         "allTypeFiles": "Tous les fichiers",
-        "browseDocuments": "Naviguez dans vos documents"
+        "browseDocuments": "Naviguez dans vos documents",
+        "overviewInDevelopment": "Cette page est en cours de développement. Revenez bientôt pour découvrir les fonctionnalités d'analyse et de reporting."
       },
       "months": {
         "01": "Janvier",
