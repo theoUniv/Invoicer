@@ -15,17 +15,21 @@ def load_config():
 
 
 def get_s3_client(minio_cfg):
-    # On privilégie les variables d'environnement (passées par Docker)
+    # On privilégie les variables d'environnement (passées par Docker/Airflow)
     access_key = os.getenv("MINIO_ROOT_USER", minio_cfg.get("access_key"))
     secret_key = os.getenv("MINIO_ROOT_PASSWORD", minio_cfg.get("secret_key"))
+    endpoint = os.getenv("MINIO_ENDPOINT", minio_cfg.get("endpoint"))
     
     return boto3.client(
         "s3",
-        endpoint_url=minio_cfg["endpoint"],
+        endpoint_url=endpoint,
         aws_access_key_id=access_key,
         aws_secret_access_key=secret_key,
         region_name=minio_cfg.get("region", "us-east-1"),
-        config=Config(signature_version="s3v4"),
+        config=Config(
+            signature_version="s3v4",
+            s3={'addressing_style': 'path'}
+        ),
     )
 
 
