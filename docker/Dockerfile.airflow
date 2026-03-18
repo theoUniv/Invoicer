@@ -19,10 +19,13 @@ RUN apt-get update && apt-get install -y \
 
 USER airflow
 
-# Initialisation de pip et installation des dépendances Python (optimisé)
+# Installation des dépendances Python avec le fichier de contraintes officiel d'Airflow
 COPY backend/requirements.txt /requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir --prefer-binary -r /requirements.txt
+    pip install --no-cache-dir \
+    --only-binary :all: \
+    -r /requirements.txt \
+    -c "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.1/constraints-3.9.txt"
 
 # Download SpaCy model (separately to benefit from cache better)
 RUN pip install --no-cache-dir https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.7.0/fr_core_news_sm-3.7.0-py3-none-any.whl
