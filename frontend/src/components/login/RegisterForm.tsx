@@ -1,21 +1,37 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Input, Tooltip } from '@/components/ui';
+import { useAppTranslation } from '@/hooks/useTranslation';
+import { registerSchema, RegisterFormData } from '@/validators/auth';
 
 export function RegisterForm() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
   const router = useRouter();
+  const { t } = useAppTranslation();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle registration logic here
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema as any),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    }
+  });
+
+  const onSubmit = async (data: RegisterFormData) => {
+    console.log('Register data:', data);
     setShowTooltip(true);
+    reset();
     setTimeout(() => {
       router.push('/login');
     }, 2000);
@@ -33,56 +49,52 @@ export function RegisterForm() {
   return (
     <>
       <Tooltip 
-        message="Compte créé !" 
+        message={t('tooltip.accountCreated')} 
         isVisible={showTooltip} 
       />
-      <div className="w-full max-w-[400px] p-8">
-        <h1 className="font-['Playfair_Display'] font-normal text-[3.5rem] leading-[1.1] mb-2">Create account</h1>
-        <p className="text-[#8A8580] mb-12 font-light">Join our intelligent financial platform.</p>
+      <div className="w-full max-w-[450px] p-8">
+        <h1 className="font-['Playfair_Display'] font-normal text-[3.5rem] leading-[1.1] mb-2">{t('register.title')}</h1>
+        <p className="text-[#8A8580] mb-12 font-light">{t('register.subtitle')}</p>
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-8">
             <Input 
               type="text" 
-              placeholder="Full name" 
-              required 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder={t('register.fullName')} 
+              {...register('name')}
+              error={errors.name?.message}
             />
           </div>
           <div className="mb-8">
             <Input 
               type="email" 
-              placeholder="Email address" 
-              required 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t('login.email')} 
+              {...register('email')}
+              error={errors.email?.message}
             />
           </div>
           <div className="mb-8">
             <Input 
               type="password" 
-              placeholder="Password" 
-              required 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t('login.password')} 
+              {...register('password')}
+              error={errors.password?.message}
             />
           </div>
           <div className="mb-8">
             <Input 
               type="password" 
-              placeholder="Confirm password" 
-              required 
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={t('register.confirmPassword')} 
+              {...register('confirmPassword')}
+              error={errors.confirmPassword?.message}
             />
           </div>
           <div className="flex justify-between items-center mt-12">
             <a href="/login" className="text-[#8A8580] no-underline text-sm">
-              Already have account?
+              {t('login.alreadyHaveAccount')}
             </a>
-            <Button variant="dark">
-              Create account
+            <Button variant="dark" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Création...' : t('register.createAccount')}
             </Button>
           </div>
         </form>

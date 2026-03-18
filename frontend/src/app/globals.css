@@ -4,7 +4,6 @@
   --background: #ffffff;
   --foreground: #171717;
   
-  /* Aura App Colors */
   --bg-main: #F4F1ED;      
   --text-primary: #1A1817; 
   --text-secondary: #8A8580; 
@@ -24,9 +23,33 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  font-size: var(--font-size-sm);
 }
 
-/* Custom utility classes for Aura app */
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+button, a, [role="button"], 
+[onclick], .clickable, 
+.interactive, .hover\:bg-white\/50:hover {
+  cursor: pointer !important;
+}
+
+nav button, .nav-item, .breadcrumb button,
+.folder-item, .file-card, .menu-item {
+  cursor: pointer !important;
+}
+
+input[type="checkbox"], input[type="radio"], 
+select, .toggle, .switch {
+  cursor: pointer !important;
+}
+
+.icon-clickable, .action-icon, .tool-icon {
+  cursor: pointer !important;
+}
+
 .aura-gradient {
   background: radial-gradient(circle at 50% 50%, #E8D8D8 0%, #D4C5D3 30%, #F4F1ED 70%);
 }

@@ -7,7 +7,7 @@
     "resetPassword": "Reset password",
     "accessPlatform": "Access platform",
     "alreadyHaveAccount": "Already have account?",
-    "createAccount": "Create account"
+    "createAccount": "I don't have an account yet."
   },
   "register": {
     "title": "Create account",
@@ -25,9 +25,192 @@
   "tooltip": {
     "accountCreated": "Account created!",
     "loginSuccess": "Login successful!",
-    "resetEmailSent": "Recovery email sent!"
+    "resetEmailSent": "Recovery email sent!",
+    "invoiceAdded": "Invoice added!",
+    "uploadComplete": "Upload complete!"
   },
   "common": {
     "intelligentFinancial": "Intelligent<br />financial<br />clarity."
+  },
+  "dashboard": {
+    "uploadDocument": "Upload Document",
+    "acceptedFormats": "PDF, JPG, PNG accepted",
+    "processingQueue": "Processing Queue",
+    "noFilesInQueue": "No files in processing queue",
+    "myFiles": "My files",
+    "overview": "Overview",
+    "settings": "Settings",
+    "signOut": "Sign Out",
+    "searchPlaceholder": "Search vendor or ID...",
+    "allStatus": "All Status",
+    "paid": "Paid",
+    "pending": "Pending",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "yearToDate": "Year to Date",
+    "invoiceId": "Invoice ID",
+    "date": "Date",
+    "vendor": "Vendor",
+    "amount": "Amount",
+    "status": "Status",
+    "action": "Action",
+    "view": "View",
+    "dragDropText": "Drag & drop invoice here or",
+    "selectFile": "Select File",
+    "folders": {
+      "invoices": "Invoices",
+      "contracts": "Contracts",
+      "quotes": "Quotes",
+      "expenses": "Expenses",
+      "documents": "Documents",
+      "allFiles": "All files",
+      "file": "file",
+      "files": "files",
+      "noFiles": "No files",
+      "emptyFolder": "This folder is empty",
+      "fileDetails": "File Details",
+      "fileType": "Type",
+      "fileId": "ID",
+      "fileDate": "Date",
+      "fileVendor": "Vendor",
+      "fileAmount": "Amount",
+      "fileStatus": "Status",
+      "download": "Download",
+      "delete": "Delete",
+      "view": "View",
+      "contextMenu": {
+        "view": "View",
+        "download": "Download",
+        "delete": "Delete"
+      },
+      "confirmDelete": "Are you sure you want to delete \"{fileName}\"?",
+      "downloadSimulated": "Download of {fileName} simulated",
+      "deleteSimulated": "Deletion of {fileName} simulated",
+      "descriptions": {
+        "monthFiles": "Files of the month",
+        "yearFiles": "Files of the year",
+        "allTypeFiles": "All files",
+        "browseDocuments": "Browse your documents",
+        "overviewInDevelopment": "This page is under development. Come back soon to discover analytics and reporting features."
+      },
+      "months": {
+        "01": "January",
+        "02": "February",
+        "03": "March",
+        "04": "April",
+        "05": "May",
+        "06": "June",
+        "07": "July",
+        "08": "August",
+        "09": "September",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+      }
+    },
+    "kpis": {
+      "totalDocuments": "Total documents",
+      "totalCompanies": "Unique companies",
+      "totalAmount": "Total amount",
+      "paidInvoices": "Paid invoices",
+      "pendingInvoices": "Pending",
+      "documents": "documents",
+      "companies": "companies",
+      "amount": "total amount",
+      "pending": "pending"
+    }
+  },
+  "landing": {
+    "hero": {
+      "liveBadge": "Invoicer is live",
+      "title": "Financial intelligence,<br /><span class=\"italic\">without the effort.</span>",
+      "subtitle": "Automate your invoice entry, reconcile your payments and get a clear view of your cash flow with surgical precision thanks to our AI.",
+      "startTrial": "Start trial",
+      "discoverProduct": "Discover product"
+    },
+    "header": {
+      "ecosystem": "Ecosystem",
+      "features": "Features",
+      "interface": "Interface",
+      "space": "Space",
+      "login": "Log in",
+      "register": "Sign up"
+    },
+    "footer": {
+      "description": "The standard of AI-powered invoice management. Edited in Paris.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "aiExtraction": "AI Extraction",
+      "approvalWorkflows": "Approval Workflows",
+      "supplierPayments": "Supplier Payments",
+      "erpIntegrations": "ERP Integrations",
+      "about": "About",
+      "careers": "Careers",
+      "press": "Press",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "termsOfUse": "Terms of Use",
+      "security": "Security",
+      "copyright": "© {year} Invoicer Technologies. All rights reserved.",
+      "linkedin": "LinkedIn"
+    },
+    "teams": {
+      "usedBy": "Used by exceptional teams"
+    },
+    "features": {
+      "title": "All your key tools,<br />perfectly synchronized.",
+      "badge": "App Store",
+      "subtitle": "Connect your<br />financial stack.",
+      "description": "Aura integrates natively with all applications already present in your accounting workflow. No more tedious CSV exports, your data travels in real time, ensuring perfect reconciliation.",
+      "seeIntegrations": "See integrations"
+    },
+    "cta": {
+      "title": "Interface preview",
+      "invoicesQueue": "Invoices Queue",
+      "vendor": "Vendor",
+      "date": "Date",
+      "amount": "Amount",
+      "status": "Status",
+      "extracted": "Extracted",
+      "paid": "Paid",
+      "processing": "Processing",
+      "data": {
+        "stripe": {
+          "name": "Stripe Inc.",
+          "date": "Oct 24, 2023",
+          "amount": "$420.00"
+        },
+        "adobe": {
+          "name": "Adobe Creative Cloud",
+          "date": "Nov 02, 2023",
+          "amount": "$54.99"
+        },
+        "unseen": {
+          "name": "Unseen Studio",
+          "date": "Nov 05, 2023",
+          "amount": "$8,500.00"
+        }
+      }
+    },
+    "finalCTA": {
+      "title": "Ready to clarify<br />your financial management?",
+      "subtitle": "Join the companies that save hours every week thanks to Invoicer's accounting automation.",
+      "createWorkspace": "Create workspace"
+    },
+    "interface": {
+      "preciseExtraction": {
+        "title": "Precise extraction",
+        "description": "Our proprietary AI model reads your invoices like a human. Amounts, VAT, suppliers, dates: everything is extracted with 99.9% accuracy, without any prior template."
+      },
+      "anomalyDetection": {
+        "title": "Anomaly detection",
+        "description": "Invoicer instantly compares each new invoice with your history. Potential duplicates, unusual price variations or suspicious IBANs are flagged before payment."
+      },
+      "legalArchiving": {
+        "title": "Legal archiving",
+        "description": "Each processed document is automatically classified, indexed and stored in a digital vault compliant with European tax requirements."
+      }
+    }
   }
 }
