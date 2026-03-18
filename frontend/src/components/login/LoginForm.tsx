@@ -1,18 +1,21 @@
 'use client';
 
-import { Button, Input, Tooltip } from '@/components/ui';
+import { Button, Input, Tooltip, NotificationContainer } from '@/components/ui';
 import { useAppTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormData } from '@/validators/auth';
+import { addNotification } from '@/lib/notifications';
 
 export function LoginForm() {
   const [showTooltip, setShowTooltip] = useState(false);
   const router = useRouter();
-  const { t, currentLanguage: language } = useAppTranslation();
+  const { t } = useAppTranslation();
+  const { login, isLoading, isAuthenticated } = useAuth();
 
   const {
     register,
@@ -28,12 +31,21 @@ export function LoginForm() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log('Login data:', data);
-    setShowTooltip(true);
-    reset();
-    setTimeout(() => {
-      router.push('/home');
-    }, 2000);
+    const result = await login(data.email, data.password);
+    
+    if (result.success) {
+      reset();
+      setShowTooltip(true);
+      setTimeout(() => {
+        router.push('/home');
+      }, 2000);
+    } else {
+      addNotification({
+        type: 'error',
+        message: result.error || 'Erreur de connexion',
+        duration: 5000
+      });
+    }
   };
 
   useEffect(() => {
@@ -47,6 +59,7 @@ export function LoginForm() {
 
   return (
     <>
+      <NotificationContainer />
       <Tooltip
         message={t('tooltip.loginSuccess')}
         isVisible={showTooltip}
@@ -78,8 +91,8 @@ export function LoginForm() {
                 {t('login.resetPassword')}
               </Link>
             </div>
-            <Button variant="dark" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Connexion...' : t('login.accessPlatform')}
+            <Button variant="dark" type="submit" disabled={isSubmitting || isLoading}>
+              {isSubmitting || isLoading ? 'Connexion...' : t('login.accessPlatform')}
             </Button>
           </div>
           <div className="flex justify-center mt-8">

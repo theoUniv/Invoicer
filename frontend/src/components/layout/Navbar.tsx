@@ -4,10 +4,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Navbar() {
   const { t } = useAppTranslation();
   const pathname = usePathname();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/';
+  };
 
   return (
     <header className="absolute w-full flex justify-between items-center px-12 py-9 border-b border-[rgba(26,24,23,0.12)]">
@@ -23,9 +30,12 @@ export function Navbar() {
         }`}>
           {t('dashboard.overview')}
         </Link>
-        <Link href="#" className="text-[#8A8580] text-xs uppercase tracking-[0.05em] hover:text-[#1A1817] transition-colors">
+        <button 
+          onClick={handleLogout}
+          className="text-[#8A8580] text-xs uppercase tracking-[0.05em] hover:text-[#1A1817] transition-colors bg-transparent border-none cursor-pointer"
+        >
           {t('dashboard.signOut')}
-        </Link>
+        </button>
       </nav>
       <div></div>
     </header>
