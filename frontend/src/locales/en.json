@@ -119,5 +119,98 @@
       "amount": "total amount",
       "pending": "pending"
     }
+  },
+  "landing": {
+    "hero": {
+      "liveBadge": "Invoicer is live",
+      "title": "Financial intelligence,<br /><span class=\"italic\">without the effort.</span>",
+      "subtitle": "Automate your invoice entry, reconcile your payments and get a clear view of your cash flow with surgical precision thanks to our AI.",
+      "startTrial": "Start trial",
+      "discoverProduct": "Discover product"
+    },
+    "header": {
+      "ecosystem": "Ecosystem",
+      "features": "Features",
+      "interface": "Interface",
+      "space": "Space",
+      "login": "Log in",
+      "register": "Sign up"
+    },
+    "footer": {
+      "description": "The standard of AI-powered invoice management. Edited in Paris.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "aiExtraction": "AI Extraction",
+      "approvalWorkflows": "Approval Workflows",
+      "supplierPayments": "Supplier Payments",
+      "erpIntegrations": "ERP Integrations",
+      "about": "About",
+      "careers": "Careers",
+      "press": "Press",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "termsOfUse": "Terms of Use",
+      "security": "Security",
+      "copyright": "© {year} Invoicer Technologies. All rights reserved.",
+      "linkedin": "LinkedIn"
+    },
+    "teams": {
+      "usedBy": "Used by exceptional teams"
+    },
+    "features": {
+      "title": "All your key tools,<br />perfectly synchronized.",
+      "badge": "App Store",
+      "subtitle": "Connect your<br />financial stack.",
+      "description": "Aura integrates natively with all applications already present in your accounting workflow. No more tedious CSV exports, your data travels in real time, ensuring perfect reconciliation.",
+      "seeIntegrations": "See integrations"
+    },
+    "cta": {
+      "title": "Interface preview",
+      "invoicesQueue": "Invoices Queue",
+      "vendor": "Vendor",
+      "date": "Date",
+      "amount": "Amount",
+      "status": "Status",
+      "extracted": "Extracted",
+      "paid": "Paid",
+      "processing": "Processing",
+      "data": {
+        "stripe": {
+          "name": "Stripe Inc.",
+          "date": "Oct 24, 2023",
+          "amount": "$420.00"
+        },
+        "adobe": {
+          "name": "Adobe Creative Cloud",
+          "date": "Nov 02, 2023",
+          "amount": "$54.99"
+        },
+        "unseen": {
+          "name": "Unseen Studio",
+          "date": "Nov 05, 2023",
+          "amount": "$8,500.00"
+        }
+      }
+    },
+    "finalCTA": {
+      "title": "Ready to clarify<br />your financial management?",
+      "subtitle": "Join the companies that save hours every week thanks to Invoicer's accounting automation.",
+      "createWorkspace": "Create workspace"
+    },
+    "interface": {
+      "preciseExtraction": {
+        "title": "Precise extraction",
+        "description": "Our proprietary AI model reads your invoices like a human. Amounts, VAT, suppliers, dates: everything is extracted with 99.9% accuracy, without any prior template."
+      },
+      "anomalyDetection": {
+        "title": "Anomaly detection",
+        "description": "Invoicer instantly compares each new invoice with your history. Potential duplicates, unusual price variations or suspicious IBANs are flagged before payment."
+      },
+      "legalArchiving": {
+        "title": "Legal archiving",
+        "description": "Each processed document is automatically classified, indexed and stored in a digital vault compliant with European tax requirements."
+      }
+    }
   }
 }
