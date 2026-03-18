@@ -19,7 +19,7 @@ async function triggerOcrPipeline(filePath) {
   }
 
   try {
-    const response = await airflowApi.post("/dags/ocr_service_pipeline/dagRuns", {
+    const response = await airflowApi.post("/dags/ocr_service_turbo_pipeline/dagRuns", {
       conf: {
         file_path: filePath,
       },
