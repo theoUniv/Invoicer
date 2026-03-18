@@ -6,12 +6,20 @@ import boto3
 from botocore.client import Config
 
 
-CONFIG_PATH = Path("config/config.yaml")
-
-
 def load_config():
-    with CONFIG_PATH.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    """Charge la configuration depuis config.yaml avec une résolution de chemin robuste."""
+    possible_paths = [
+        Path("config/config.yaml"),
+        Path("/opt/airflow/config/config.yaml"),
+        Path(__file__).parent.parent.parent / "config" / "config.yaml"
+    ]
+    
+    for path in possible_paths:
+        if path.exists():
+            with path.open("r", encoding="utf-8") as f:
+                return yaml.safe_load(f)
+    
+    raise FileNotFoundError(f"Could not find config.yaml in any of: {[str(p) for p in possible_paths]}")
 
 
 def get_s3_client(minio_cfg):
@@ -98,4 +106,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
