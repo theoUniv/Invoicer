@@ -1,12 +1,9 @@
-const express = require('express');
-const app = express();
+require("dotenv").config();
+
+const { createApp } = require("./src/app");
+
 const PORT = process.env.PORT || 3001;
-
-app.use(express.json());
-
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Backend is running' });
-});
+const app = createApp();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
