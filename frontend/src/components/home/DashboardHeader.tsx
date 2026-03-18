@@ -1,6 +1,7 @@
 import { useAppTranslation } from '@/hooks/useTranslation';
-import { FileType } from '@/lib/files';
+import { FileType, FileData } from '@/lib/files';
 import { Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface DashboardHeaderProps {
   onSearchChange?: (value: string) => void;
@@ -13,6 +14,8 @@ interface DashboardHeaderProps {
     month?: string;
   };
   onBreadcrumbClick?: (level: 'root' | 'type' | 'year' | 'month', folder?: { type: FileType; year?: string; month?: string }) => void;
+  files?: FileData[];
+  onFilteredFilesChange?: (filteredFiles: FileData[]) => void;
 }
 
 const getFolderLabel = (type: FileType, t: any) => {
@@ -35,15 +38,45 @@ const getMonthLabel = (month: string, t: any) => {
   return months[month] || month;
 };
 
+const searchFiles = (files: FileData[], searchTerm: string): FileData[] => {
+  if (!searchTerm || searchTerm.trim() === '') {
+    return files;
+  }
+
+  const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+
+  return files.filter(file => 
+    file.id.toLowerCase().includes(normalizedSearchTerm) ||
+    file.vendor.toLowerCase().includes(normalizedSearchTerm) ||
+    file.amount.replace(/[$€£]/g, '').toLowerCase().includes(normalizedSearchTerm) ||
+    file.status.toLowerCase().includes(normalizedSearchTerm) ||
+    file.date.toLowerCase().includes(normalizedSearchTerm) ||
+    file.fileName?.toLowerCase().includes(normalizedSearchTerm)
+  );
+};
+
 export function DashboardHeader({
   onSearchChange,
   onStatusFilterChange,
   onDateFilterChange,
   activeView = 'list',
   currentFolder,
-  onBreadcrumbClick
+  onBreadcrumbClick,
+  files = [],
+  onFilteredFilesChange
 }: DashboardHeaderProps) {
   const { t } = useAppTranslation();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const filteredFiles = searchFiles(files, searchTerm);
+    onFilteredFilesChange?.(filteredFiles);
+    onSearchChange?.(searchTerm);
+  }, [searchTerm, files, onFilteredFilesChange, onSearchChange]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
 
   if (activeView === 'folders') {
     const breadcrumbParts = [];
@@ -128,7 +161,8 @@ export function DashboardHeader({
             type="text"
             placeholder={t('dashboard.searchPlaceholder')}
             className="bg-transparent border-b border-[rgba(26,24,23,0.12)] py-2 pr-3 pl-10 text-sm text-[#1A1817] outline-none transition-colors focus:border-[#1A1817] w-48 placeholder:text-[#8A8580]"
-            onChange={(e) => onSearchChange?.(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
         <select

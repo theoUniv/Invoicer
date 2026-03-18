@@ -1,7 +1,7 @@
 'use client';
 
 import { ViewToggle } from '@/components/ui';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardHeader } from './DashboardHeader';
 import { InvoiceTable } from './InvoiceTable';
 import { InvoiceFolders } from './InvoiceFolders';
@@ -33,6 +33,11 @@ export function DashboardContent({
     year?: string;
     month?: string;
   } | undefined>(undefined);
+  const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
+
+  useEffect(() => {
+    setFilteredFiles(files);
+  }, [files]);
 
   const handleFolderSelect = (folder: { type: FileType; year?: string; month?: string } | undefined) => {
     setCurrentFolder(folder);
@@ -48,12 +53,16 @@ export function DashboardContent({
     }
   };
 
+  const handleFilteredFilesChange = (newFilteredFiles: FileData[]) => {
+    setFilteredFiles(newFilteredFiles);
+  };
+
   const getFilteredFiles = () => {
     if (!currentFolder) {
-      return files;
+      return filteredFiles;
     }
 
-    return files.filter(file => {
+    return filteredFiles.filter(file => {
       if (file.type !== currentFolder.type) return false;
       
       if (currentFolder.year) {
@@ -73,13 +82,13 @@ export function DashboardContent({
   const getSubFolders = () => {
     if (!currentFolder) {
       const types = new Set<FileType>();
-      files.forEach(file => types.add(file.type));
+      filteredFiles.forEach(file => types.add(file.type));
       return Array.from(types).map(type => ({ type }));
     }
 
     if (currentFolder.type && !currentFolder.year) {
       const years = new Set<string>();
-      files.forEach(file => {
+      filteredFiles.forEach(file => {
         if (file.type === currentFolder.type) {
           years.add(new Date(file.date).getFullYear().toString());
         }
@@ -90,7 +99,7 @@ export function DashboardContent({
 
     if (currentFolder.type && currentFolder.year && !currentFolder.month) {
       const months = new Set<string>();
-      files.forEach(file => {
+      filteredFiles.forEach(file => {
         if (file.type === currentFolder.type) {
           const fileYear = new Date(file.date).getFullYear().toString();
           if (fileYear === currentFolder.year) {
@@ -112,7 +121,7 @@ export function DashboardContent({
         uploads={uploads}
         onFileSelect={onFileSelect}
         showTree={activeView === 'folders'}
-        files={files}
+        files={filteredFiles}
         onFolderSelect={handleFolderSelect}
         currentFolder={currentFolder}
       />
@@ -126,6 +135,8 @@ export function DashboardContent({
           activeView={activeView}
           currentFolder={currentFolder}
           onBreadcrumbClick={handleBreadcrumbClick}
+          files={files}
+          onFilteredFilesChange={handleFilteredFilesChange}
         />
 
         <div className={`flex justify-end mb-4 ${activeView === 'folders' ? '-mt-14' : ''}`}>
@@ -137,7 +148,7 @@ export function DashboardContent({
 
         {activeView === 'list' ? (
           <InvoiceTable 
-            files={files}
+            files={filteredFiles}
             onViewInvoice={onViewInvoice}
           />
         ) : (
