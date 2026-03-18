@@ -5,7 +5,7 @@ import mysql.connector
 load_dotenv()
 
 connection = mysql.connector.connect(
-    host="72.60.37.180",
+    host=os.getenv("MYSQL_HOST"),
     user=os.getenv("MYSQL_USER"),
     password=os.getenv("MYSQL_PASSWORD"),
     database=os.getenv("MYSQL_DATABASE"),
@@ -23,7 +23,7 @@ def insert_document(json_data):
     """
 
     values = (
-        1, 
+        1,
         json_data["invoice_number"],
         f"gold/invoices/{json_data['invoice_number']}.json"
     )
@@ -78,13 +78,3 @@ def insert_invoice(json_data):
     insert_fields(version_id, json_data)
 
     return "Insertion réussie"
-
-if __name__ == "__main__":
-
-    import json
-
-    with open("FAC-20250320-0050.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    print(insert_invoice(data))
-    
