@@ -5,11 +5,11 @@ import mysql.connector
 load_dotenv()
 
 connection = mysql.connector.connect(
-    host=os.getenv("MYSQL_HOST"),
-    user=os.getenv("MYSQL_USER"),
-    password=os.getenv("MYSQL_PASSWORD"),
-    database=os.getenv("MYSQL_DATABASE"),
-    port=int(os.getenv("MYSQL_PORT"))
+    host=os.getenv("MYSQL_HOST", "db"),
+    user=os.getenv("MYSQL_USER", "invoicer_user"),
+    password=os.getenv("MYSQL_PASSWORD", "invoicer_password"),
+    database=os.getenv("MYSQL_DATABASE", "invoicer_db"),
+    port=int(os.getenv("MYSQL_PORT", "3306"))
 )
 
 cursor = connection.cursor()
@@ -93,10 +93,10 @@ def main():
     json_name = args.json_name
 
     # MinIO Setup
-    endpoint = os.getenv('MINIO_ENDPOINT', 'localhost:9000').replace('http://', '').replace('https://', '')
-    access_key = os.getenv('MINIO_ROOT_USER')
-    secret_key = os.getenv('MINIO_ROOT_PASSWORD')
-    secure = os.getenv('MINIO_SECURE', 'False').lower() == 'true'
+    endpoint = (os.getenv('MINIO_ENDPOINT') or 'http://minio:9000').replace('http://', '').replace('https://', '')
+    access_key = os.getenv('MINIO_ROOT_USER', 'minioadmin')
+    secret_key = os.getenv('MINIO_ROOT_PASSWORD', 'minioadmin123')
+    secure = os.getenv('MINIO_SECURE', 'false').lower() == 'true'
     
     client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=secure)
     gold_bucket = os.getenv('MINIO_GOLD_BUCKET', 'gold')
