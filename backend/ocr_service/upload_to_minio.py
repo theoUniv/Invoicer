@@ -51,28 +51,45 @@ def upload_directory_to_bucket(s3, bucket: str, local_dir: Path, prefix: str = "
             print(f"Upload -> bucket={bucket}, key={key}")
 
 
+import argparse
+
 def main():
+    parser = argparse.ArgumentParser(description='Upload invoices to MinIO.')
+    parser.add_argument('--file', type=str, help='Specific file to upload (optional).')
+    parser.add_argument('--bucket', type=str, choices=['raw', 'clean'], default='raw', help='Target bucket (default: raw).')
+    args = parser.parse_args()
+
     cfg = load_config()
     minio_cfg = cfg["minio"]
     paths = cfg["paths"]
 
     s3 = get_s3_client(minio_cfg)
 
-    # Bronze / Raw -> PDF, images
-    upload_directory_to_bucket(
-        s3,
-        bucket=minio_cfg["buckets"]["raw"],
-        local_dir=Path(paths["raw_invoices"]),
-        prefix="invoices",
-    )
+    bucket_name = minio_cfg["buckets"][args.bucket]
 
-    # Silver / Clean -> texte OCR (pour plus tard)
-    upload_directory_to_bucket(
-        s3,
-        bucket=minio_cfg["buckets"]["clean"],
-        local_dir=Path(paths["clean_invoices"]),
-        prefix="invoices",
-    )
+    if args.file:
+        file_path = Path(args.file)
+        if not file_path.exists():
+            print(f"File not found: {file_path}")
+            return
+        
+        try:
+            s3.head_bucket(Bucket=bucket_name)
+        except:
+            print(f"Création du bucket : {bucket_name}")
+            s3.create_bucket(Bucket=bucket_name)
+
+        key = f"invoices/{file_path.name}"
+        s3.upload_file(str(file_path), bucket_name, key)
+        print(f"Uploaded {file_path} to {bucket_name}/{key}")
+    else:
+        print("Synchronizing directories defined in config...")
+        upload_directory_to_bucket(
+            s3,
+            bucket=minio_cfg["buckets"]["raw"],
+            local_dir=Path(paths["raw_invoices"]),
+            prefix="invoices",
+        )
 
 if __name__ == "__main__":
     main()
