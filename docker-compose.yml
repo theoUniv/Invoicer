@@ -68,6 +68,7 @@ services:
     restart: always
     volumes:
       - ./backend:/app
+      - /app/node_modules
     environment:
       - PORT=3001
       - MYSQL_HOST=db
