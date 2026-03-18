@@ -59,6 +59,25 @@ services:
         condition: service_healthy
     profiles:
       - seeder # Run only when explicitly requested: docker compose run seeder
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: invoicer-api
+    restart: always
+    environment:
+      - PORT=3001
+      - MYSQL_HOST=db
+      - MINIO_ENDPOINT=http://minio:9000
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+      - minio
+    networks:
+      - invoicer-network
+
   postgres:
     image: postgres:13
     container_name: invoicer-airflow-db
