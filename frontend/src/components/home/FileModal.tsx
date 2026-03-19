@@ -125,14 +125,19 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
     const tva = parse(fields['total_tva']);
     const ttc = parse(fields['total_ttc']);
     
-    if (ht === 0 && tva === 0 && ttc === 0) return { ok: true };
+    if (ht === 0 && tva === 0 && ttc === 0) return { ok: true, siretOk: true };
     const expectedTtc = Math.round((ht + tva) * 100) / 100;
     const actualTtc = Math.round(ttc * 100) / 100;
     const diff = Math.abs(expectedTtc - actualTtc);
-    return { ok: diff <= 0.05, expected: expectedTtc, actual: actualTtc };
+    
+    // SIRET validation: must be exactly 14 digits
+    const siret = (fields['siret'] || '').replace(/\s/g, '');
+    const siretOk = siret.length === 0 || /^\d{14}$/.test(siret);
+    
+    return { ok: diff <= 0.05, expected: expectedTtc, actual: actualTtc, siretOk };
   };
 
-  const coherence = isEditing ? checkCoherence(editableFields) : { ok: true };
+  const coherence = isEditing ? checkCoherence(editableFields) : { ok: true, siretOk: true };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -232,6 +237,12 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                                 <span className="text-[9px] font-bold uppercase tracking-tight">Erreur TVA</span>
                               </div>
                             )}
+                            {version.fields.find(f => f.fieldName === 'siret' && (f.fieldValue || '').replace(/\s/g, '').length !== 14 && (f.fieldValue || '').length > 0) && (
+                              <div className="flex items-center gap-1 text-orange-600 ml-2 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">
+                                <AlertTriangle className="w-3 h-3" />
+                                <span className="text-[9px] font-bold uppercase tracking-tight">SIRET Invalide</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </button>
@@ -277,13 +288,16 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                                     type="text"
                                     value={currentValue}
                                     onChange={(e) => setEditableFields(prev => ({...prev, [field.fieldName]: e.target.value}))}
-                                    className={`text-[11px] font-medium text-[#121212] w-full bg-transparent outline-none focus:ring-1 focus:ring-amber-400 rounded px-1 -mx-1 py-0.5 transition-shadow ${
-                                      isModified ? 'text-amber-900' : ''
-                                    } ${
-                                      isCurrentlyEditing && !coherence.ok && ['total_ht', 'total_tva', 'total_ttc'].includes(field.fieldName) 
-                                        ? 'text-red-600 bg-red-50' 
-                                        : ''
-                                    }`}
+                                      className={`text-[11px] font-medium text-[#121212] w-full bg-transparent outline-none focus:ring-1 focus:ring-amber-400 rounded px-1 -mx-1 py-0.5 transition-shadow ${
+                                        isModified ? 'text-amber-900' : ''
+                                      } ${
+                                        isCurrentlyEditing && (
+                                          (!coherence.ok && ['total_ht', 'total_tva', 'total_ttc'].includes(field.fieldName)) ||
+                                          (field.fieldName === 'siret' && !coherence.siretOk)
+                                        )
+                                          ? 'text-red-600 bg-red-50' 
+                                          : ''
+                                      }`}
                                     placeholder="—"
                                   />
                                 ) : (
@@ -296,15 +310,22 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                           })}
                         </div>
                         
-                        {isCurrentlyEditing && !coherence.ok && (
+                        {isCurrentlyEditing && (!coherence.ok || !coherence.siretOk) && (
                           <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3 animate-in shake duration-500">
                             <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5" />
                             <div className="space-y-1">
-                              <p className="text-xs font-bold text-red-700">Incohérence des totaux</p>
-                              <p className="text-[10px] text-red-600 font-medium">
-                                Le calcul attendu est HT ({editableFields['total_ht'] || '0'}) + TVA ({editableFields['total_tva'] || '0'}) = <b>{coherence.expected?.toFixed(2)}</b>.
-                                Or, vous avez saisi <b>{coherence.actual?.toFixed(2)}</b>.
-                              </p>
+                              <p className="text-xs font-bold text-red-700">Incohérence des données</p>
+                              {!coherence.ok && (
+                                <p className="text-[10px] text-red-600 font-medium">
+                                  Le calcul attendu est HT ({editableFields['total_ht'] || '0'}) + TVA ({editableFields['total_tva'] || '0'}) = <b>{coherence.expected?.toFixed(2)}</b>.
+                                  Or, vous avez saisi <b>{coherence.actual?.toFixed(2)}</b>.
+                                </p>
+                              )}
+                              {!coherence.siretOk && (
+                                <p className="text-[10px] text-red-600 font-medium">
+                                  Le SIRET saisi est invalide (actuellement {editableFields['siret']?.replace(/\s/g, '').length || 0} chiffres). Il doit en faire <b>exactement 14</b>.
+                                </p>
+                              )}
                             </div>
                           </div>
                         )}
