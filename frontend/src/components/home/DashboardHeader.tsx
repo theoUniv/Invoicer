@@ -26,7 +26,7 @@ const getFolderLabel = (type: FileType, t: any) => {
     case 'contract':
       return t('dashboard.folders.contracts');
     case 'devis':
-      return t('dashboard.folders.devis');
+      return t('dashboard.folders.quotes');
     case 'expense':
       return t('dashboard.folders.expenses');
     default:
@@ -69,7 +69,7 @@ const searchFiles = (files: FileData[], searchTerm: string): FileData[] => {
   return files.filter(file => 
     file.id.toLowerCase().includes(normalizedSearchTerm) ||
     file.vendor.toLowerCase().includes(normalizedSearchTerm) ||
-    file.amount.replace(/[$€£]/g, '').toLowerCase().includes(normalizedSearchTerm) ||
+    String(file.amount || '').replace(/[$€£]/g, '').toLowerCase().includes(normalizedSearchTerm) ||
     file.status.toLowerCase().includes(normalizedSearchTerm) ||
     file.date.toLowerCase().includes(normalizedSearchTerm) ||
     file.fileName?.toLowerCase().includes(normalizedSearchTerm)

@@ -3,6 +3,7 @@ import { UploadArea } from '@/components/ui/UploadArea';
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { uploadFile } from '@/lib/api/uploadFile';
 import { FileData, FileType, UploadItem } from '@/lib/types/documents';
+import { getMonthsForTypeAndYear, getTypesFromGroups, getYearsForType, groupFilesByHierarchy } from '@/lib/utils/dateUtils';
 import { ChevronRight, Folder } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -62,39 +63,7 @@ const getMonthLabel = (month: string, t: any) => {
   return monthMap[month] || month;
 };
 
-const getYearsFromFiles = (files: FileData[]) => {
-  const years = new Set<string>();
-  files.forEach(file => {
-    const year = new Date(file.date).getFullYear().toString();
-    years.add(year);
-  });
-  return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
-};
-
-const getExistingFileTypes = (files: FileData[]): FileType[] => {
-  const existingTypes = new Set<FileType>();
-  files.forEach(file => {
-    if (file.type) {
-      existingTypes.add(file.type);
-    }
-  });
-  const allTypes: FileType[] = ['invoice', 'contract', 'devis', 'expense'];
-  return allTypes.filter(type => existingTypes.has(type));
-};
-
-const getMonthsFromFiles = (files: FileData[], year: string, type: FileType) => {
-  const months = new Set<string>();
-  files.forEach(file => {
-    if (file.type === type) {
-      const fileYear = new Date(file.date).getFullYear().toString();
-      if (fileYear === year) {
-        const month = new Date(file.date).getMonth() + 1;
-        months.add(month.toString().padStart(2, '0'));
-      }
-    }
-  });
-  return Array.from(months).sort((a, b) => parseInt(a) - parseInt(b));
-};
+// Removed local implementations to use dateUtils.ts
 
 export function UploadPanel({
   uploads,
@@ -185,7 +154,8 @@ export function UploadPanel({
     setExpandedYears(newExpanded);
   };
 
-  const fileTypes: FileType[] = getExistingFileTypes(files);
+  const fileGroups = groupFilesByHierarchy(files);
+  const fileTypes: FileType[] = getTypesFromGroups(fileGroups);
 
   return (
     <aside className="w-80 shrink-0 flex flex-col gap-6">
@@ -232,7 +202,7 @@ export function UploadPanel({
         <div>
           <div className="mb-8">
             {fileTypes.map((type) => {
-              const typeYears = getYearsFromFiles(files.filter(f => f.type === type));
+              const typeYears = getYearsForType(fileGroups, type);
               const isCurrentType = currentFolder?.type === type;
               const isExpanded = expandedTypes.has(type);
 
@@ -262,7 +232,7 @@ export function UploadPanel({
                   >
                     <div className="ml-7 border-l border-[rgba(18,18,18,0.12)] pl-4">
                       {typeYears.map((year) => {
-                        const yearMonths = getMonthsFromFiles(files, year, type);
+                        const yearMonths = getMonthsForTypeAndYear(fileGroups, type, year);
                         const isCurrentYear = currentFolder?.year === year && currentFolder?.type === type;
                         const isYearExpanded = expandedYears.has(`${type}-${year}`);
 
@@ -281,7 +251,7 @@ export function UploadPanel({
                                   }`}
                               />
                               <span className={isCurrentYear && !currentFolder?.month ? 'font-medium' : ''}>
-                                {year}
+                                {(year === 'NaN' || !year || String(year).includes('NaN')) ? t('dashboard.folders.invalidDate') : year}
                               </span>
                             </div>
 
@@ -306,7 +276,7 @@ export function UploadPanel({
                                     >
                                       <ChevronRight className="w-4 h-4 rotate-90" />
                                       <span className={isCurrentMonth ? 'font-medium' : ''}>
-                                        {getMonthLabel(month, t)}
+                                        {(month === 'NaN' || !month || String(month).includes('NaN')) ? t('dashboard.folders.invalidDate') : getMonthLabel(month, t)}
                                       </span>
                                     </div>
                                   );

@@ -160,7 +160,7 @@ export function FolderTree({
                                 }`}
                             />
                             <span className={isCurrentYear && !currentFolder?.month ? 'font-medium' : ''}>
-                              {year}
+                              {(year === 'NaN' || !year || String(year).includes('NaN')) ? t('dashboard.folders.invalidDate') : year}
                             </span>
                           </div>
 
@@ -185,7 +185,7 @@ export function FolderTree({
                                   >
                                     <ChevronRight className="w-4 h-4 rotate-90" />
                                     <span className={isCurrentMonth ? 'font-medium' : ''}>
-                                      {getMonthLabel(month, t)}
+                                      {(month === 'NaN' || !month || String(month).includes('NaN')) ? t('dashboard.folders.invalidDate') : getMonthLabel(month, t)}
                                     </span>
                                   </div>
                                 );

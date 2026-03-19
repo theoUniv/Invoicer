@@ -59,11 +59,13 @@ export function KpiCards({ files, getExtractedData, isLoading = false }: KpiCard
     return Number.isFinite(num) ? num : 0;
   };
 
-  const totalAmount = files.reduce((sum: number, file: FileData) => {
+  const calculatedTotal = files.reduce((sum: number, file: FileData) => {
     const extracted = getExtractedData?.(file);
     const amountValue = extracted?.totalTtc || file.amount;
     return sum + parseAmountToNumber(amountValue);
   }, 0);
+  
+  const totalAmount = isNaN(calculatedTotal) ? 0 : calculatedTotal;
 
   const pendingInvoices = files.filter(file => file.status === 'pending').length;
 

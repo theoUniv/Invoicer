@@ -94,34 +94,30 @@ router.get(
     if (!doc) return res.status(404).json({ error: { message: "Document not found" } });
 
     const minio = getMinioClient();
-    let bucket = getRawBucket();
+    const bucket = getRawBucket(); // "raw"
     
-    // Dynamically determine bucket from storagePath if it starts with a known bucket name
-    const storagePath = String(doc.storagePath || "").toLowerCase();
-    if (storagePath.startsWith("gold/")) bucket = "gold";
-    else if (storagePath.startsWith("silver/")) bucket = "silver";
-    else if (storagePath.startsWith("raw/")) bucket = "raw";
-    // Also handle s3:// schemes
-    else if (storagePath.startsWith("s3://")) {
-      const parts = storagePath.slice(5).split("/");
-      if (parts.length > 0) bucket = parts[0];
+    // Simplification : On cherche toujours dans raw/invoices/ avec le nom original + .pdf
+    const objectName = `invoices/${doc.originalName}.pdf`;
+    const filename = `${doc.originalName}.pdf`;
+
+    console.log(`DEBUG: Fetching simplified from bucket="${bucket}", objectName="${objectName}"`);
+
+    const contentType = "application/pdf";
+
+    try {
+      const stream = await minio.getObject(bucket, objectName);
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+      stream.on("error", (e) => {
+        console.error(`ERROR: Stream error fetching ${objectName}:`, e);
+        if (!res.headersSent) res.status(500).json({ error: { message: "Stream error" } });
+        else res.destroy(e);
+      });
+      stream.pipe(res);
+    } catch (err) {
+      console.error(`ERROR: Failed to getObject from MinIO:`, err);
+      res.status(500).json({ error: { message: `MinIO error: ${err.message}`, bucket, objectName } });
     }
-
-    const objectName = normalizeMinioObjectKey(doc.storagePath, bucket);
-    if (!objectName) return res.status(500).json({ error: { message: "Invalid storagePath for document" } });
-
-    const filename = doc.originalName || path.basename(objectName);
-    const ext = path.extname(filename).toLowerCase();
-    const contentType = ext === ".pdf" ? "application/pdf" : "application/octet-stream";
-
-    res.setHeader("Content-Type", contentType);
-    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
-
-    const stream = await minio.getObject(bucket, objectName);
-    stream.on("error", (e) => {
-      res.destroy(e);
-    });
-    stream.pipe(res);
   }),
 );
 

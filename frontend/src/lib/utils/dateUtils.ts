@@ -63,8 +63,21 @@ export function groupFilesByHierarchy(files: FileData[]) {
     }
     
     const type = file.type;
-    const year = fileDate.getFullYear().toString();
-    const month = (fileDate.getMonth() + 1).toString().padStart(2, '0');
+    const yearNum = fileDate.getFullYear();
+    const monthNum = fileDate.getMonth() + 1;
+    
+    // Safety check: skip if date extraction resulted in NaN or invalid numbers
+    if (typeof yearNum !== 'number' || isNaN(yearNum) || typeof monthNum !== 'number' || isNaN(monthNum)) {
+      return;
+    }
+    
+    const year = yearNum.toString();
+    const month = monthNum.toString().padStart(2, '0');
+
+    // Final check for "NaN" string keys
+    if (year === 'NaN' || month === 'NaN') {
+      return;
+    }
     
     if (!groups[type]) groups[type] = {};
     if (!groups[type][year]) groups[type][year] = {};

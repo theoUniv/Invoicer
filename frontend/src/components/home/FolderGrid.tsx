@@ -83,7 +83,7 @@ const getFolderInfo = (folder: { type: FileType; year?: string; month?: string }
     fileCount = countFilesInGroup(groups, folder.type, folder.year, folder.month);
   }
   
-  return { label, fileCount };
+  return { label, fileCount: isNaN(fileCount) ? 0 : fileCount };
 };
 
 export function FolderGrid({ 

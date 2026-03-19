@@ -69,19 +69,47 @@ def link_document_company(document_id, company_id):
     cursor.execute(query, (document_id, company_id))
     connection.commit()
 
-def update_document(document_id, json_data, fallback_name):
-    query = """
-    UPDATE documents 
-    SET status = 'processed', 
-        original_name = %s
-    WHERE document_id = %s
-    """
-    # Use fallback if invoice_number is None or empty
+def update_document(document_id, json_data, fallback_name, minio_client=None):
+    # Get current storage_path first
+    cursor.execute("SELECT storage_path, original_name FROM documents WHERE document_id = %s", (document_id,))
+    row = cursor.fetchone()
+    old_path = row[0] if row else None
+    
     invoice_number = json_data.get("invoice_number") or fallback_name
     doc_type = json_data.get("type", "facture")
     doc_type_id = get_or_create_document_type(doc_type)
 
-    cursor.execute(query, (invoice_number, document_id))
+    new_original_name = invoice_number
+    new_storage_path = old_path # default to old if rename fails
+    
+    if old_path and minio_client:
+        try:
+            raw_bucket = os.getenv("MINIO_RAW_BUCKET", "raw")
+            # Clear bucket prefix if present
+            old_key = old_path
+            if old_key.startswith("raw/"): old_key = old_key[4:]
+            
+            # Simple "pretty" key: invoices/FAC-....pdf
+            new_key = f"invoices/{invoice_number}.pdf"
+            
+            # Move in MinIO
+            from minio.commonconfig import CopySource
+            minio_client.copy_object(raw_bucket, new_key, CopySource(raw_bucket, old_key))
+            minio_client.remove_object(raw_bucket, old_key)
+            
+            new_storage_path = f"{raw_bucket}/{new_key}"
+            print(f"Renamed {old_key} to {new_key} in {raw_bucket}")
+        except Exception as e:
+            print(f"Warning: Failed to rename in MinIO: {e}")
+
+    query = """
+    UPDATE documents 
+    SET status = 'processed', 
+        original_name = %s,
+        storage_path = %s
+    WHERE document_id = %s
+    """
+    cursor.execute(query, (new_original_name, new_storage_path, document_id))
     
     # Also update type if needed
     type_query = "UPDATE documents SET document_type_id = %s WHERE document_id = %s"
@@ -168,11 +196,11 @@ def insert_items(version_id, items):
                 cursor.execute(query, (version_id, key, str(value)))
     connection.commit()
 
-def process_invoice_insertion(json_data, fallback_name, document_id=None):
+def process_invoice_insertion(json_data, fallback_name, document_id=None, minio_client=None):
     company_id = get_or_create_company(json_data.get("supplier"))
     
     if document_id:
-        update_document(document_id, json_data, fallback_name)
+        update_document(document_id, json_data, fallback_name, minio_client)
         doc_id = document_id
         print(f"Updated document {doc_id}")
     else:
@@ -229,7 +257,7 @@ def main():
         print(f"Processing data for document_id: {document_id}")
         # Use filename as fallback if invoice_number is None
         fallback_name = json_name.rsplit('.', 1)[0]
-        result = process_invoice_insertion(gold_data, fallback_name, document_id)
+        result = process_invoice_insertion(gold_data, fallback_name, document_id, client)
         print(result)
 
     except Exception as e:
