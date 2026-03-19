@@ -131,7 +131,6 @@ def insert_fields(version_id, json_data):
         "client_name": json_data.get("client", {}).get("name"),
         "client_address": json_data.get("client", {}).get("address"),
     }
-    # --- NEW: Coherence check (HT + TVA = TTC) ---
     ht = fields.get("total_ht")
     tva = fields.get("total_tva")
     ttc = fields.get("total_ttc")

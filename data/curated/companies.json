@@ -1,0 +1,202 @@
+[
+  {
+    "company_id": 1,
+    "name": "Maillard",
+    "siret": "65276381234057",
+    "tva": "FR15206722815",
+    "address": "2, boulevard Alexandre Pascal, 85612 Léger",
+    "city": "Courtois-sur-Mer",
+    "postal_code": "88934",
+    "country": "France"
+  },
+  {
+    "company_id": 2,
+    "name": "Faivre",
+    "siret": "08024477115851",
+    "tva": "FR25899934428",
+    "address": "96, chemin Christophe Guibert, 10301 Allain",
+    "city": "Sainte Andrée-les-Bains",
+    "postal_code": "48899",
+    "country": "France"
+  },
+  {
+    "company_id": 3,
+    "name": "Alves",
+    "siret": "31616830261516",
+    "tva": "FR60582883557",
+    "address": "650, avenue Baron, 79298 CosteVille",
+    "city": "Parent",
+    "postal_code": "03235",
+    "country": "France"
+  },
+  {
+    "company_id": 4,
+    "name": "Gautier Ribeiro S.A.R.L.",
+    "siret": "71152490026285",
+    "tva": "FR19625831318",
+    "address": "1, rue Brigitte Peltier, 20809 Joubert",
+    "city": "Verdier-la-Forêt",
+    "postal_code": "10293",
+    "country": "France"
+  },
+  {
+    "company_id": 5,
+    "name": "Lévêque",
+    "siret": "43590097992683",
+    "tva": "FR17928027831",
+    "address": "rue Étienne Guibert, 65461 Moreau",
+    "city": "Bèguedan",
+    "postal_code": "80326",
+    "country": "France"
+  },
+  {
+    "company_id": 6,
+    "name": "Lacombe Pinto SA",
+    "siret": "01563791812595",
+    "tva": "FR16230286780",
+    "address": "avenue David Le Roux, 60579 DelannoyVille",
+    "city": "Mendès-la-Forêt",
+    "postal_code": "90654",
+    "country": "France"
+  },
+  {
+    "company_id": 7,
+    "name": "Cordier",
+    "siret": "44759813395586",
+    "tva": "FR15514141367",
+    "address": "10, boulevard de Fischer, 77906 Langlois-sur-Étienne",
+    "city": "Laurent",
+    "postal_code": "13733",
+    "country": "France"
+  },
+  {
+    "company_id": 8,
+    "name": "Girard",
+    "siret": "73117048031651",
+    "tva": "FR33396406228",
+    "address": "96, chemin Josette Rodrigues, 41409 Ruiz-sur-Mer",
+    "city": "Fabre-la-Forêt",
+    "postal_code": "41919",
+    "country": "France"
+  },
+  {
+    "company_id": 9,
+    "name": "Jacquet",
+    "siret": "06890809927838",
+    "tva": "FR23434167281",
+    "address": "6, chemin Marion, 15620 Piresdan",
+    "city": "Morvan",
+    "postal_code": "49718",
+    "country": "France"
+  },
+  {
+    "company_id": 10,
+    "name": "Lejeune",
+    "siret": "99757380174921",
+    "tva": "FR45202032376",
+    "address": "rue de Gay, 54390 Chauveau",
+    "city": "Ferrand",
+    "postal_code": "79781",
+    "country": "France"
+  },
+  {
+    "company_id": 11,
+    "name": "Humbert et Fils",
+    "siret": "29819463050653",
+    "tva": "FR64669656183",
+    "address": "76, avenue Chauvin, 49807 Pierre",
+    "city": "Martinezdan",
+    "postal_code": "14333",
+    "country": "France"
+  },
+  {
+    "company_id": 12,
+    "name": "Guillaume",
+    "siret": "11720868701699",
+    "tva": "FR45833620513",
+    "address": "avenue Berger, 41307 Guillou",
+    "city": "Sainte Xavier",
+    "postal_code": "95442",
+    "country": "France"
+  },
+  {
+    "company_id": 13,
+    "name": "Marques SA",
+    "siret": "30595770469476",
+    "tva": "FR90350985963",
+    "address": "rue Boulanger, 87264 Peltier",
+    "city": "Samson",
+    "postal_code": "27481",
+    "country": "France"
+  },
+  {
+    "company_id": 14,
+    "name": "Diaz Cousin SA",
+    "siret": "16008821523143",
+    "tva": "FR23852125657",
+    "address": "60, rue Marchand, 09149 Faure-sur-Mer",
+    "city": "Saint Anastasie",
+    "postal_code": "32696",
+    "country": "France"
+  },
+  {
+    "company_id": 15,
+    "name": "Guillon S.A.",
+    "siret": "71175439566500",
+    "tva": "FR47200535237",
+    "address": "606, chemin de Besson, 30628 Blot-la-Forêt",
+    "city": "Lopes",
+    "postal_code": "62607",
+    "country": "France"
+  },
+  {
+    "company_id": 16,
+    "name": "Rodriguez",
+    "siret": "33009581338664",
+    "tva": "FR44364370625",
+    "address": "402, rue Gomez, 97322 Prévost",
+    "city": "Leclerc-la-Forêt",
+    "postal_code": "28724",
+    "country": "France"
+  },
+  {
+    "company_id": 17,
+    "name": "Bouvet",
+    "siret": "69732962838014",
+    "tva": "FR29721071405",
+    "address": "934, chemin Parent, 72575 Sainte SabineVille",
+    "city": "Valentin-sur-Mer",
+    "postal_code": "84419",
+    "country": "France"
+  },
+  {
+    "company_id": 18,
+    "name": "Muller",
+    "siret": "49822331145662",
+    "tva": "FR66188453908",
+    "address": "82, avenue Dorothée Tanguy, 70545 Garnier",
+    "city": "Baudry",
+    "postal_code": "47898",
+    "country": "France"
+  },
+  {
+    "company_id": 19,
+    "name": "Renaud",
+    "siret": "96004381410512",
+    "tva": "FR94891737085",
+    "address": "2, chemin Capucine Maillard, 66798 Ramos",
+    "city": "Julien",
+    "postal_code": "51661",
+    "country": "France"
+  },
+  {
+    "company_id": 20,
+    "name": "Bruneau",
+    "siret": "65806737250233",
+    "tva": "FR78335397194",
+    "address": "11, chemin Mace, 82564 Costa",
+    "city": "Goncalves",
+    "postal_code": "20117",
+    "country": "France"
+  }
+]

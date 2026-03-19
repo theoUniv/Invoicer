@@ -128,7 +128,6 @@ router.post(
       return res.status(400).json({ error: { message: "Missing or invalid fields array" } });
     }
 
-    // Check if doc exists
     const doc = await prisma.document.findUnique({
       where: { documentId },
       include: { versions: true }
@@ -138,12 +137,10 @@ router.post(
       return res.status(404).json({ error: { message: "Document not found" } });
     }
 
-    // Determine new version number
     const maxVersion = doc.versions.length > 0
       ? Math.max(...doc.versions.map(v => v.versionNumber))
       : 0;
 
-    // Create the new version
     const newVersion = await prisma.documentVersion.create({
       data: {
         documentId,
