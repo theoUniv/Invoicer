@@ -23,6 +23,8 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editableFields, setEditableFields] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [siretExists, setSiretExists] = useState(true);
+  const [checkingSiret, setCheckingSiret] = useState(false);
 
   const fetchDoc = async (id: number) => {
     setLoading(true);
@@ -44,6 +46,36 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
       }
     }
   }, [file]);
+
+  // --- NEW: Real-time SIRET existence check ---
+  useEffect(() => {
+    if (!isEditing) {
+      setSiretExists(true);
+      return;
+    }
+
+    const siret = (editableFields['siret'] || '').replace(/\s/g, '');
+    if (siret.length === 14 && /^\d{14}$/.test(siret)) {
+      const timer = setTimeout(async () => {
+        setCheckingSiret(true);
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://72.60.37.180:3001/api';
+          const res = await fetch(`${baseUrl}/companies?siret=${siret}`);
+          const json = await res.json();
+          setSiretExists(json.data && json.data.length > 0);
+        } catch (err) {
+          console.error('SIRET check failed', err);
+          setSiretExists(true); // Don't block on error
+        } finally {
+          setCheckingSiret(false);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setSiretExists(true);
+    }
+  }, [editableFields['siret'], isEditing]);
+  // --------------------------------------------
   
   if (!file) return null;
 
@@ -134,10 +166,10 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
     const siret = (fields['siret'] || '').replace(/\s/g, '');
     const siretOk = siret.length === 0 || /^\d{14}$/.test(siret);
     
-    return { ok: diff <= 0.05, expected: expectedTtc, actual: actualTtc, siretOk };
+    return { ok: diff <= 0.05, expected: expectedTtc, actual: actualTtc, siretOk, siretExists };
   };
 
-  const coherence = isEditing ? checkCoherence(editableFields) : { ok: true, siretOk: true };
+  const coherence = isEditing ? checkCoherence(editableFields) : { ok: true, siretOk: true, siretExists: true, expected: 0, actual: 0 };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -293,7 +325,7 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                                       } ${
                                         isCurrentlyEditing && (
                                           (!coherence.ok && ['total_ht', 'total_tva', 'total_ttc'].includes(field.fieldName)) ||
-                                          (field.fieldName === 'siret' && !coherence.siretOk)
+                                          (field.fieldName === 'siret' && (!coherence.siretOk || !coherence.siretExists))
                                         )
                                           ? 'text-red-600 bg-red-50' 
                                           : ''
@@ -310,7 +342,7 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                           })}
                         </div>
                         
-                        {isCurrentlyEditing && (!coherence.ok || !coherence.siretOk) && (
+                        {isCurrentlyEditing && (!coherence.ok || !coherence.siretOk || !coherence.siretExists) && (
                           <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3 animate-in shake duration-500">
                             <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5" />
                             <div className="space-y-1">
@@ -324,6 +356,11 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                               {!coherence.siretOk && (
                                 <p className="text-[10px] text-red-600 font-medium">
                                   Le SIRET saisi est invalide (actuellement {editableFields['siret']?.replace(/\s/g, '').length || 0} chiffres). Il doit en faire <b>exactement 14</b>.
+                                </p>
+                              )}
+                              {!coherence.siretExists && coherence.siretOk && (
+                                <p className="text-[10px] text-red-600 font-medium italic">
+                                  Attention : Ce SIRET (<b>{editableFields['siret']}</b>) n'existe pas dans notre base de données.
                                 </p>
                               )}
                             </div>
