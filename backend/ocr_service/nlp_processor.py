@@ -12,11 +12,11 @@ load_dotenv()
 def get_db_connection():
     try:
         return mysql.connector.connect(
-            host=os.getenv('MYSQL_HOST', 'localhost'),
+            host=os.getenv('MYSQL_HOST', 'db'),
             user=os.getenv('MYSQL_USER', 'invoicer_user'),
             password=os.getenv('MYSQL_PASSWORD', 'invoicer_password'),
             database=os.getenv('MYSQL_DATABASE', 'invoicer_db'),
-            port=int(os.getenv('MYSQL_PORT', 3306))
+            port=int(os.getenv('MYSQL_PORT', '3306'))
         )
     except Exception as e:
         print(f"Database connection error: {e}")

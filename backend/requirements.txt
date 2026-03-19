@@ -1,5 +1,5 @@
 pytesseract
-opencv-python
+opencv-python-headless
 pillow
 numpy
 pdf2image
@@ -8,3 +8,4 @@ minio
 python-dotenv
 mysql-connector-python
 PyYAML
+boto3

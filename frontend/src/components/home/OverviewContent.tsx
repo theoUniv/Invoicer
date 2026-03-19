@@ -8,6 +8,7 @@ import { InvoiceFolders } from './InvoiceFolders';
 import { KpiCards } from './KpiCards';
 import { FolderTree } from './FolderTree';
 import { FileData, FileType } from '@/lib/files';
+import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
 
 interface OverviewContentProps {
   files: FileData[];
@@ -15,6 +16,7 @@ interface OverviewContentProps {
   onStatusFilterChange?: (value: string) => void;
   onDateFilterChange?: (value: string) => void;
   onViewInvoice?: (file: FileData) => void;
+  getExtractedData?: (file: FileData) => ExtractedInvoiceData | null;
 }
 
 export function OverviewContent({
@@ -22,7 +24,8 @@ export function OverviewContent({
   onSearchChange,
   onStatusFilterChange,
   onDateFilterChange,
-  onViewInvoice
+  onViewInvoice,
+  getExtractedData
 }: OverviewContentProps) {
   const [activeView, setActiveView] = useState<'list' | 'folders'>('list');
   const [currentFolder, setCurrentFolder] = useState<{
@@ -127,6 +130,7 @@ export function OverviewContent({
           <InvoiceTable
             files={getFilteredFiles()}
             onViewInvoice={onViewInvoice}
+            getExtractedData={getExtractedData}
           />
         ) : (
           <div className="flex">

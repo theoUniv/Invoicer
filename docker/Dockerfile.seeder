@@ -13,4 +13,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["bash", "-c", "python db_scripts/minIO/scripts/generate_companies.py && python db_scripts/minIO/scripts/generate_documents.py && python db_scripts/minIO/scripts/upload_to_minio.py"]
+CMD ["bash", "-c", "python db_scripts/minIO/scripts/generate_companies.py && python db_scripts/minIO/scripts/generate_documents.py && python backend/ocr_service/upload_to_minio.py"]

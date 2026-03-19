@@ -8,6 +8,9 @@ const { normalizeMinioObjectKey } = require("../utils/minioObjectKey");
 const { asyncHandler } = require("../middleware/asyncHandler");
 const { requireAuth } = require("../middleware/requireAuth");
 const { upload } = require("../lib/upload");
+const { triggerOcrPipeline } = require("../lib/airflow");
+const fs = require("fs").promises;
+const fsSync = require("fs");
 
 const router = express.Router();
 
@@ -141,7 +144,8 @@ router.post(
     for (const f of files) {
       const originalName = f.originalname || "file";
       const ext = path.extname(originalName) || "";
-      const objectName = `${docType.name}/${yyyy}/${mm}/${crypto.randomUUID()}${ext}`;
+      const baseName = crypto.randomUUID();
+      const objectName = `${docType.name}/${yyyy}/${mm}/${baseName}${ext}`;
 
       await minio.putObject(bucket, objectName, f.buffer, {
         "Content-Type": f.mimetype || "application/octet-stream",
@@ -159,6 +163,21 @@ router.post(
           documentType: true,
         },
       });
+
+      const tempDir = path.join(__dirname, "../../temp_uploads");
+      if (!fsSync.existsSync(tempDir)) fsSync.mkdirSync(tempDir, { recursive: true });
+
+      const localPath = path.join(tempDir, `${baseName}${ext}`);
+      await fs.writeFile(localPath, f.buffer);
+
+      const airflowPath = `/opt/airflow/backend/temp_uploads/${baseName}${ext}`;
+      console.log(`DEBUG: Triggering Airflow for doc_id=${doc.documentId}, path=${airflowPath}`);
+      try {
+        await triggerOcrPipeline(airflowPath, doc.documentId);
+      } catch (err) {
+        console.error(`Failed to trigger DAG for ${originalName}:`, err.message);
+      }
+
       created.push(doc);
     }
 

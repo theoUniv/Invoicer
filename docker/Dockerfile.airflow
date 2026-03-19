@@ -4,20 +4,28 @@ USER root
 
 # Install system dependencies for OCR and OpenCV
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3-dev \
     tesseract-ocr \
     tesseract-ocr-fra \
     libtesseract-dev \
     poppler-utils \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    libsm6 \
+    libxext6 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 USER airflow
 
-# Install Python dependencies
+# Installation des dépendances Python avec le fichier de contraintes officiel d'Airflow
 COPY backend/requirements.txt /requirements.txt
-RUN pip install --no-cache-dir -r /requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+    --only-binary :all: \
+    -r /requirements.txt \
+    -c "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.1/constraints-3.9.txt"
 
-# Download SpaCy model
-RUN python -m spacy download fr_core_news_sm
+# Download SpaCy model (separately to benefit from cache better)
+RUN pip install --no-cache-dir https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.7.0/fr_core_news_sm-3.7.0-py3-none-any.whl

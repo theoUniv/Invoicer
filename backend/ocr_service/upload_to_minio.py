@@ -6,26 +6,39 @@ import boto3
 from botocore.client import Config
 
 
-CONFIG_PATH = Path("config/config.yaml")
-
-
 def load_config():
-    with CONFIG_PATH.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    """Charge la configuration depuis config.yaml avec une résolution de chemin robuste."""
+    possible_paths = [
+        Path("config/config.yaml"),
+        Path("/opt/airflow/config/config.yaml"),
+        Path(__file__).parent.parent.parent / "config" / "config.yaml"
+    ]
+    
+    for path in possible_paths:
+        if path.exists():
+            with path.open("r", encoding="utf-8") as f:
+                return yaml.safe_load(f)
+    
+    raise FileNotFoundError(f"Could not find config.yaml in any of: {[str(p) for p in possible_paths]}")
 
 
 def get_s3_client(minio_cfg):
-    # On privilégie les variables d'environnement (passées par Docker)
+    # On privilégie les variables d'environnement (passées par Docker/Airflow)
     access_key = os.getenv("MINIO_ROOT_USER", minio_cfg.get("access_key"))
     secret_key = os.getenv("MINIO_ROOT_PASSWORD", minio_cfg.get("secret_key"))
+    endpoint = os.getenv("MINIO_ENDPOINT", minio_cfg.get("endpoint"))
+    print(f"DEBUG: Using MinIO endpoint: {endpoint}")
     
     return boto3.client(
         "s3",
-        endpoint_url=minio_cfg["endpoint"],
+        endpoint_url=endpoint,
         aws_access_key_id=access_key,
         aws_secret_access_key=secret_key,
         region_name=minio_cfg.get("region", "us-east-1"),
-        config=Config(signature_version="s3v4"),
+        config=Config(
+            signature_version="s3v4",
+            s3={'addressing_style': 'path'}
+        ),
     )
 
 
@@ -93,4 +106,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

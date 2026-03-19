@@ -47,7 +47,7 @@ services:
       - MYSQL_USER=${MYSQL_USER:-invoicer_user}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-invoicer_password}
       - MYSQL_DATABASE=${MYSQL_DATABASE:-invoicer_db}
-      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
       - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin123}
     volumes:
@@ -59,6 +59,36 @@ services:
         condition: service_healthy
     profiles:
       - seeder # Run only when explicitly requested: docker compose run seeder
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: invoicer-api
+    restart: always
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - PORT=3001
+      - MYSQL_HOST=db
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin123}
+      - DATABASE_URL=mysql://${MYSQL_USER:-invoicer_user}:${MYSQL_PASSWORD:-invoicer_password}@db:3306/${MYSQL_DATABASE:-invoicer_db}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - AIRFLOW_API_URL=http://airflow-webserver:8080/api/v1
+      - AIRFLOW_API_USER=${AIRFLOW_ADMIN_USER:-admin}
+      - AIRFLOW_API_PASS=${AIRFLOW_ADMIN_PASSWORD:-admin}
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+      - minio
+    networks:
+      - invoicer-network
+
   postgres:
     image: postgres:13
     container_name: invoicer-airflow-db
@@ -81,10 +111,13 @@ services:
       postgres:
         condition: service_started
     environment:
+      - AIRFLOW__CORE__FERNET_KEY=89_vI046z3pXNAtGAs4Hw5bJ1qY4oO8b1J-qA3U3nE0=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=secret-key-123
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${AIRFLOW_DB_USER:-airflow}:${AIRFLOW_DB_PASSWORD:-airflow}@postgres/${AIRFLOW_DB:-airflow}
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
-      - _AIRFLOW_DB_UPGRADE=True
+      - AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT=300
       - _AIRFLOW_WWW_USER_CREATE=True
       - _AIRFLOW_WWW_USER_USERNAME=${AIRFLOW_ADMIN_USER:-admin}
       - _AIRFLOW_WWW_USER_PASSWORD=${AIRFLOW_ADMIN_PASSWORD:-admin}
@@ -116,6 +149,9 @@ services:
       postgres:
         condition: service_started
     environment:
+      - AIRFLOW__CORE__FERNET_KEY=89_vI046z3pXNAtGAs4Hw5bJ1qY4oO8b1J-qA3U3nE0=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=secret-key-123
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${AIRFLOW_DB_USER:-airflow}:${AIRFLOW_DB_PASSWORD:-airflow}@postgres/${AIRFLOW_DB:-airflow}
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__LOAD_EXAMPLES=False

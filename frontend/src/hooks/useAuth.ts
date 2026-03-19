@@ -1,26 +1,35 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User } from '@/data/users';
-import { getCurrentUser, isAuthenticated, logoutUser, loginUser } from '@/lib/auth';
+import { AuthUser } from '@/lib/auth';
+import { getCurrentUser, isAuthenticated, logoutUser, loginUser, registerUser } from '@/lib/auth';
 
 interface UseAuthReturn {
-  user: User | null;
+  user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (data: { email: string; password: string; firstName?: string; lastName?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
 
 export function useAuth(): UseAuthReturn {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const currentUser = getCurrentUser();
-      const isAuth = isAuthenticated();
-      setUser(currentUser);
+    const checkAuth = async () => {
+      try {
+        if (isAuthenticated()) {
+          const currentUser = await getCurrentUser();
+          setUser(currentUser);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setUser(null);
+      }
     };
 
     checkAuth();
@@ -30,7 +39,6 @@ export function useAuth(): UseAuthReturn {
     setIsLoading(true);
     
     try {
-      const { loginUser } = await import('@/lib/auth');
       const result = await loginUser(email, password);
       
       if (result.success && result.user) {
@@ -46,6 +54,25 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
+  const register = async (data: { email: string; password: string; firstName?: string; lastName?: string }): Promise<{ success: boolean; error?: string }> => {
+    setIsLoading(true);
+    
+    try {
+      const result = await registerUser(data);
+      
+      if (result.success && result.user) {
+        setUser(result.user);
+        return { success: true };
+      } else {
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      return { success: false, error: 'Erreur lors de l\'inscription' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     logoutUser();
     setUser(null);
@@ -56,6 +83,7 @@ export function useAuth(): UseAuthReturn {
     isLoading,
     isAuthenticated: user !== null,
     login,
+    register,
     logout
   };
 }

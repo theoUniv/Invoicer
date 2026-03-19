@@ -120,10 +120,10 @@ def main():
         print(f"Error: {pdf_name} is not a PDF file.")
         return
 
-    endpoint = os.getenv('MINIO_ENDPOINT').replace('http://', '').replace('https://', '')
-    access_key = os.getenv('MINIO_ROOT_USER')
-    secret_key = os.getenv('MINIO_ROOT_PASSWORD')
-    secure = os.getenv('MINIO_SECURE').lower() == 'true'
+    endpoint = (os.getenv('MINIO_ENDPOINT') or 'http://minio:9000').replace('http://', '').replace('https://', '')
+    access_key = os.getenv('MINIO_ROOT_USER', 'minioadmin')
+    secret_key = os.getenv('MINIO_ROOT_PASSWORD', 'minioadmin123')
+    secure = os.getenv('MINIO_SECURE', 'false').lower() == 'true'
     
     client = Minio(
         endpoint,
