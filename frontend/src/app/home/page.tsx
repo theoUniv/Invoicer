@@ -207,7 +207,7 @@ export default function Home() {
 
   const handleViewInvoice = (file: FileData) => {
     if (file.id !== '#000001' && file.id !== '#000002') {
-      window.open(`${process.env.NEXT_PUBLIC_API_URL}/api/documents/${file.id.replace('#', '')}/raw-file`, '_blank');
+      window.open(`${process.env.NEXT_PUBLIC_API_URL}/documents/${file.id.replace('#', '')}/raw-file`, '_blank');
     } else {
       alert('Document de démonstration - pas de fichier réel');
     }

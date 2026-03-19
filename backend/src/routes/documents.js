@@ -94,7 +94,19 @@ router.get(
     if (!doc) return res.status(404).json({ error: { message: "Document not found" } });
 
     const minio = getMinioClient();
-    const bucket = getRawBucket();
+    let bucket = getRawBucket();
+    
+    // Dynamically determine bucket from storagePath if it starts with a known bucket name
+    const storagePath = String(doc.storagePath || "").toLowerCase();
+    if (storagePath.startsWith("gold/")) bucket = "gold";
+    else if (storagePath.startsWith("silver/")) bucket = "silver";
+    else if (storagePath.startsWith("raw/")) bucket = "raw";
+    // Also handle s3:// schemes
+    else if (storagePath.startsWith("s3://")) {
+      const parts = storagePath.slice(5).split("/");
+      if (parts.length > 0) bucket = parts[0];
+    }
+
     const objectName = normalizeMinioObjectKey(doc.storagePath, bucket);
     if (!objectName) return res.status(500).json({ error: { message: "Invalid storagePath for document" } });
 

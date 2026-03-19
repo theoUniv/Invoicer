@@ -73,8 +73,7 @@ def update_document(document_id, json_data, fallback_name):
     query = """
     UPDATE documents 
     SET status = 'processed', 
-        original_name = %s,
-        storage_path = %s
+        original_name = %s
     WHERE document_id = %s
     """
     # Use fallback if invoice_number is None or empty
@@ -82,8 +81,7 @@ def update_document(document_id, json_data, fallback_name):
     doc_type = json_data.get("type", "facture")
     doc_type_id = get_or_create_document_type(doc_type)
 
-    storage_path = f"gold/invoices/{invoice_number}.json"
-    cursor.execute(query, (invoice_number, storage_path, document_id))
+    cursor.execute(query, (invoice_number, document_id))
     
     # Also update type if needed
     type_query = "UPDATE documents SET document_type_id = %s WHERE document_id = %s"
@@ -93,8 +91,8 @@ def update_document(document_id, json_data, fallback_name):
 
 def insert_document(json_data, fallback_name):
     query = """
-    INSERT INTO documents (document_type_id, original_name, storage_path, status)
-    VALUES (%s, %s, %s, 'processed')
+    INSERT INTO documents (document_type_id, original_name, status)
+    VALUES (%s, %s, 'processed')
     """
     # Use fallback if invoice_number is None or empty
     invoice_number = json_data.get("invoice_number") or fallback_name
@@ -103,8 +101,7 @@ def insert_document(json_data, fallback_name):
 
     values = (
         doc_type_id,
-        invoice_number,
-        f"gold/invoices/{invoice_number}.json"
+        invoice_number
     )
     cursor.execute(query, values)
     connection.commit()
