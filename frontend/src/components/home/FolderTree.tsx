@@ -107,7 +107,7 @@ export function FolderTree({
   };
 
   return (
-    <aside className="w-80 flex-shrink-0 flex flex-col gap-6 mt-10">
+    <aside className="w-80 shrink-0 flex flex-col gap-6 mt-10">
       <div>
         <div className="mb-8">
           {fileTypes.map((type) => {

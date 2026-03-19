@@ -88,19 +88,6 @@ export default function Overview() {
     return extractedData.get(documentId) || null;
   };
 
-  if (loading) {
-    return (
-      <AuthGuard requireAuth={true}>
-        <div className="min-h-screen bg-[#F4F1ED] pt-24 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A1817] mx-auto mb-4"></div>
-            <p className="text-[#8A8580]">Chargement des données...</p>
-          </div>
-        </div>
-      </AuthGuard>
-    );
-  }
-
   return (
     <AuthGuard requireAuth={true}>
       <div className="min-h-screen bg-[#F4F1ED] pt-24" 
@@ -111,6 +98,7 @@ export default function Overview() {
         
         <OverviewContent
           files={files}
+          isLoading={loading}
           onSearchChange={handleSearchChange}
           onStatusFilterChange={handleStatusFilterChange}
           onDateFilterChange={handleDateFilterChange}

@@ -12,9 +12,10 @@ interface InvoiceTableProps {
   files: FileData[];
   onViewInvoice?: (file: FileData) => void;
   getExtractedData?: (file: FileData) => ExtractedInvoiceData | null;
+  isLoading?: boolean;
 }
 
-export function InvoiceTable({ files, onViewInvoice, getExtractedData }: InvoiceTableProps) {
+export function InvoiceTable({ files, onViewInvoice, getExtractedData, isLoading = false }: InvoiceTableProps) {
   const { t, i18n } = useAppTranslation();
   const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -63,55 +64,82 @@ export function InvoiceTable({ files, onViewInvoice, getExtractedData }: Invoice
           </DataTableRow>
         </DataTableHeader>
         <tbody>
-          {paginatedFiles.map((file) => {
-            const extractedData = getExtractedData?.(file);
-            
-            return (
-              <DataTableRow 
-                key={file.id}
-                className="hover:bg-white/30 transition-colors"
-              >
+          {isLoading ? (
+            Array.from({ length: pageSize }).map((_, idx) => (
+              <DataTableRow key={`skeleton-${idx}`}>
                 <DataTableCell className="text-xs uppercase tracking-[0.05em] text-[#8A8580]">
-                  <div>{file.id}</div>
-                  {extractedData?.invoiceNumber && (
-                    <div className="text-black text-xs normal-case tracking-normal mt-1">
-                      {extractedData.invoiceNumber}
-                    </div>
-                  )}
+                  <div className="h-3 w-24 rounded bg-[#E7E1D8] animate-pulse" />
+                  <div className="h-3 w-32 rounded mt-3 bg-[#E7E1D8] animate-pulse" />
                 </DataTableCell>
                 <DataTableCell className="text-black">
-                  {formatDate(extractedData?.issueDate || file.date, t, i18n)}
+                  <div className="h-3 w-28 rounded bg-[#E7E1D8] animate-pulse" />
                 </DataTableCell>
                 <DataTableCell className="font-medium text-black">
-                  {file.vendor}
-                  {extractedData?.siret && (
-                    <span className="text-xs text-[#8A8580] block">SIRET: {extractedData.siret}</span>
-                  )}
+                  <div className="h-3 w-40 rounded bg-[#E7E1D8] animate-pulse" />
+                  <div className="h-3 w-28 rounded mt-3 bg-[#E7E1D8] animate-pulse" />
                 </DataTableCell>
                 <DataTableCell className="font-['Playfair_Display'] text-lg text-black">
-                  {extractedData?.totalTtc || file.amount}
+                  <div className="h-4 w-28 rounded bg-[#E7E1D8] animate-pulse" />
                 </DataTableCell>
                 <DataTableCell>
-                  <StatusBadge status={file.status as 'paid' | 'pending'}>
-                    {file.status}
-                  </StatusBadge>
+                  <div className="h-6 w-20 rounded bg-[#E7E1D8] animate-pulse" />
                 </DataTableCell>
                 <DataTableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    onClick={() => handleViewClick(file)}
-                    className='text-[#8A8580] hover:underline'
-                  >
-                    {t('dashboard.view')}
-                  </Button>
+                  <div className="h-8 w-16 rounded bg-[#E7E1D8] animate-pulse ml-auto" />
                 </DataTableCell>
               </DataTableRow>
-            );
-          })}
+            ))
+          ) : (
+            paginatedFiles.map((file) => {
+              const extractedData = getExtractedData?.(file);
+
+              return (
+                <DataTableRow
+                  key={file.id}
+                  className="hover:bg-white/30 transition-colors"
+                >
+                  <DataTableCell className="text-xs uppercase tracking-[0.05em] text-[#8A8580]">
+                    <div>{file.id}</div>
+                    {extractedData?.invoiceNumber && (
+                      <div className="text-black text-xs normal-case tracking-normal mt-1">
+                        {extractedData.invoiceNumber}
+                      </div>
+                    )}
+                  </DataTableCell>
+                  <DataTableCell className="text-black">
+                    {formatDate(extractedData?.issueDate || file.date, t, i18n)}
+                  </DataTableCell>
+                  <DataTableCell className="font-medium text-black">
+                    {file.vendor}
+                    {extractedData?.siret && (
+                      <span className="text-xs text-[#8A8580] block">SIRET: {extractedData.siret}</span>
+                    )}
+                  </DataTableCell>
+                  <DataTableCell className="font-['Playfair_Display'] text-lg text-black">
+                    {extractedData?.totalTtc || file.amount}
+                  </DataTableCell>
+                  <DataTableCell>
+                    <StatusBadge status={file.status as 'paid' | 'pending'}>
+                      {file.status}
+                    </StatusBadge>
+                  </DataTableCell>
+                  <DataTableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleViewClick(file)}
+                      className="text-[#8A8580] hover:underline"
+                    >
+                      {t('dashboard.view')}
+                    </Button>
+                  </DataTableCell>
+                </DataTableRow>
+              );
+            })
+          )}
         </tbody>
       </DataTable>
 
-      {pageCount > 1 && (
+      {!isLoading && pageCount > 1 && (
         <div className="flex items-center justify-between mt-4">
           <Button
             variant="ghost"

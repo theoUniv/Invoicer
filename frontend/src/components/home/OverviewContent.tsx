@@ -1,23 +1,21 @@
 'use client';
 
 import { ViewToggle } from '@/components/ui';
-import { useState, useEffect } from 'react';
-import { DataTable, DataTableHeader, DataTableRow, DataTableCell, DataTableHeaderCell } from '@/components/ui/DataTable';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { Button } from '@/components/ui';
-import { useAppTranslation } from '@/hooks/useTranslation';
+import { useCallback, useRef } from 'react';
 import { FileData, FileType } from '@/lib/types/documents';
+import { getMonthsForTypeAndYear, getTypesFromGroups, getYearsForType, groupFilesByHierarchy, normalizeDateString } from '@/lib/utils/dateUtils';
 import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
-import { groupFilesByHierarchy, getTypesFromGroups, getYearsForType, getMonthsForTypeAndYear, normalizeDateString } from '@/lib/utils/dateUtils';
 import { updateFileDatesWithExtractedData } from '@/lib/utils/fileDateUpdater';
-import { KpiCards } from './KpiCards';
+import { useEffect, useState } from 'react';
 import { DashboardHeader } from './DashboardHeader';
-import { InvoiceTable } from './InvoiceTable';
 import { FolderTree } from './FolderTree';
 import { InvoiceFolders } from './InvoiceFolders';
+import { InvoiceTable } from './InvoiceTable';
+import { KpiCards } from './KpiCards';
 
 interface OverviewContentProps {
   files: FileData[];
+  isLoading?: boolean;
   onSearchChange?: (value: string) => void;
   onStatusFilterChange?: (value: string) => void;
   onDateFilterChange?: (value: string) => void;
@@ -27,6 +25,7 @@ interface OverviewContentProps {
 
 export function OverviewContent({
   files,
+  isLoading = false,
   onSearchChange,
   onStatusFilterChange,
   onDateFilterChange,
@@ -41,6 +40,12 @@ export function OverviewContent({
   } | undefined>(undefined);
 
   const [updatedFiles, setUpdatedFiles] = useState<FileData[]>(files);
+  const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
+  const statusFilterRef = useRef<'all' | 'paid' | 'pending'>('all');
+
+  useEffect(() => {
+    setFilteredFiles(updatedFiles);
+  }, [updatedFiles]);
 
   useEffect(() => {
     if (getExtractedData) {
@@ -79,12 +84,31 @@ export function OverviewContent({
     }
   };
 
+  const mapStatusFilterValue = (value: string): 'all' | 'paid' | 'pending' => {
+    const v = (value ?? '').toLowerCase();
+
+    if (v === 'all') return 'all';
+    if (v === 'paid') return 'paid';
+    if (v === 'pending') return 'pending';
+
+    if (v.includes('pending') || v.includes('en attente') || v.includes('en attente'.toLowerCase())) return 'pending';
+    if (v.includes('paid') || v.includes('pay')) return 'paid';
+
+    return 'all';
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    const next = mapStatusFilterValue(value);
+    statusFilterRef.current = next;
+    onStatusFilterChange?.(value);
+  };
+
   const getFilteredFiles = () => {
     if (!currentFolder) {
-      return updatedFiles;
+      return filteredFiles;
     }
 
-    return updatedFiles.filter(file => {
+    return filteredFiles.filter(file => {
       if (file.type !== currentFolder.type) return false;
 
       if (currentFolder.year) {
@@ -104,6 +128,27 @@ export function OverviewContent({
       return true;
     });
   };
+
+  const handleFilteredFilesChange = useCallback((newFilteredFiles: FileData[]) => {
+    const statusFilter = statusFilterRef.current;
+
+    if (statusFilter === 'all') {
+      setFilteredFiles(newFilteredFiles);
+      return;
+    }
+
+    const statusFilteredFiles = newFilteredFiles.filter(file => {
+      const raw = (file.status ?? '').toLowerCase();
+
+      if (statusFilter === 'paid') {
+        return raw === 'paid' || raw === 'processed' || raw === 'completed';
+      }
+
+      return raw === 'pending' || raw === 'uploaded' || raw === 'processing';
+    });
+
+    setFilteredFiles(statusFilteredFiles);
+  }, []);
 
   const getSubFolders = () => {
     const fileGroups = groupFilesByHierarchy(updatedFiles);
@@ -129,15 +174,17 @@ export function OverviewContent({
   return (
     <main className="flex flex-1 px-12 py-12 gap-16 max-w-[1600px] mx-auto w-full">
       <section className="flex-1 flex flex-col">
-        <KpiCards files={files} />
+        <KpiCards files={files} getExtractedData={getExtractedData} isLoading={isLoading} />
 
         <DashboardHeader
           onSearchChange={onSearchChange}
-          onStatusFilterChange={onStatusFilterChange}
+          onStatusFilterChange={handleStatusFilterChange}
           onDateFilterChange={onDateFilterChange}
           activeView={activeView}
           currentFolder={currentFolder}
           onBreadcrumbClick={handleBreadcrumbClick}
+          files={updatedFiles}
+          onFilteredFilesChange={handleFilteredFilesChange}
         />
 
         <div className={`flex justify-end mb-4 ${activeView === 'folders' ? '-mt-14' : ''}`}>
@@ -150,18 +197,19 @@ export function OverviewContent({
         {activeView === 'list' ? (
           <InvoiceTable
             files={getFilteredFiles()}
+            isLoading={isLoading}
             onViewInvoice={onViewInvoice}
             getExtractedData={getExtractedData}
           />
         ) : (
           <div className="flex">
             <FolderTree
-              files={updatedFiles}
+              files={filteredFiles}
               onFolderSelect={handleFolderSelect}
               currentFolder={currentFolder}
             />
             <InvoiceFolders
-              files={updatedFiles}
+              files={getFilteredFiles()}
               subFolders={getSubFolders()}
               currentFolder={currentFolder}
               onFolderSelect={handleFolderSelect}

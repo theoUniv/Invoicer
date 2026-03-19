@@ -188,7 +188,7 @@ export function UploadPanel({
   const fileTypes: FileType[] = getExistingFileTypes(files);
 
   return (
-    <aside className="w-80 flex-shrink-0 flex flex-col gap-6">
+    <aside className="w-80 shrink-0 flex flex-col gap-6">
       <Tooltip
         message={tooltipMessage}
         isVisible={showTooltip}

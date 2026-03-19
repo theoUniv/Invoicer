@@ -87,12 +87,32 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const { t } = useAppTranslation();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending'>('all');
+
+  const handleStatusFilterChange = (value: string) => {
+    const next = value as 'all' | 'paid' | 'pending';
+    setStatusFilter(next);
+    onStatusFilterChange?.(next);
+  };
 
   useEffect(() => {
     const filteredFiles = searchFiles(files, searchTerm);
-    onFilteredFilesChange?.(filteredFiles);
+
+    const statusFilteredFiles = statusFilter === 'all'
+      ? filteredFiles
+      : filteredFiles.filter(file => {
+          const raw = (file.status ?? '').toLowerCase();
+
+          if (statusFilter === 'paid') {
+            return raw === 'paid' || raw === 'processed' || raw === 'completed';
+          }
+
+          return raw === 'pending' || raw === 'uploaded' || raw === 'processing';
+        });
+
+    onFilteredFilesChange?.(statusFilteredFiles);
     onSearchChange?.(searchTerm);
-  }, [searchTerm, files, onFilteredFilesChange, onSearchChange]);
+  }, [searchTerm, files, statusFilter, onFilteredFilesChange, onSearchChange]);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -187,11 +207,12 @@ export function DashboardHeader({
         </div>
         <select
           className="bg-transparent border-b border-[rgba(26,24,23,0.12)] py-2 text-sm text-[#1A1817] outline-none transition-colors focus:border-[#1A1817] w-30"
-          onChange={(e) => onStatusFilterChange?.(e.target.value)}
+          value={statusFilter}
+          onChange={(e) => handleStatusFilterChange(e.target.value)}
         >
-          <option>{t('dashboard.allStatus')}</option>
-          <option>{t('dashboard.paid')}</option>
-          <option>{t('dashboard.pending')}</option>
+          <option value="all">{t('dashboard.allStatus')}</option>
+          <option value="paid">{t('dashboard.paid')}</option>
+          <option value="pending">{t('dashboard.pending')}</option>
         </select>
         <select
           className="bg-transparent border-b border-[rgba(26,24,23,0.12)] py-2 text-sm text-[#1A1817] outline-none transition-colors focus:border-[#1A1817] w-30"

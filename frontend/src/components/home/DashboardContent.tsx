@@ -16,6 +16,7 @@ interface DashboardContentProps {
   files: FileData[];
   uploads: UploadItem[];
   onFileSelect: (file: File) => void;
+  isLoading?: boolean;
   onSearchChange?: (value: string) => void;
   onStatusFilterChange?: (value: string) => void;
   onDateFilterChange?: (value: string) => void;
@@ -30,6 +31,7 @@ export function DashboardContent({
   files,
   uploads,
   onFileSelect,
+  isLoading = false,
   onSearchChange,
   onStatusFilterChange,
   onDateFilterChange,
@@ -39,12 +41,8 @@ export function DashboardContent({
   onUploadComplete,
   getExtractedData
 }: DashboardContentProps) {
-  const { t } = useAppTranslation();
-  const [activeView, setActiveView] = useState<'list' | 'folders'>('folders');
+  const [activeView, setActiveView] = useState<'list' | 'folders'>('list');
   const [currentFolder, setCurrentFolder] = useState<{ type: FileType; year?: string; month?: string } | undefined>(undefined);
-  const [searchValue, setSearchValue] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
   const [updatedFiles, setUpdatedFiles] = useState<FileData[]>(files);
   const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
 
@@ -186,6 +184,7 @@ export function DashboardContent({
           ) : (
             <InvoiceTable 
               files={filteredFiles}
+              isLoading={isLoading}
               onViewInvoice={onViewInvoice}
               getExtractedData={getExtractedData}
             />
