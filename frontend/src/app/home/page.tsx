@@ -2,20 +2,51 @@
 
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { DashboardContent } from '@/components/home';
-import { addUploadItem, FileData, getFilesData, getMyFilesData, updateUploadStatus, UploadItem } from '@/lib/files';
+import { getMyFiles, uploadFile, getDocumentDetail } from '@/lib/api';
+import { documentToFileData } from '@/lib/utils/documentTransform';
+import { extractInvoiceData } from '@/lib/utils/documentDetailTransform';
+import { FileData, UploadItem } from '@/lib/types/documents';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
   const [files, setFiles] = useState<FileData[]>([]);
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [extractedData, setExtractedData] = useState<Map<number, any>>(new Map());
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await getMyFilesData();
-        setFiles(data.files);
-        setUploads(data.uploads);
+        const data = await getMyFiles();
+        const files = data.data.map(documentToFileData);
+        setFiles(files);
+        setUploads([]);
+        
+        const processedFiles = files.filter(file => 
+          file.status === 'paid' && file.id !== '#000001' && file.id !== '#000002'
+        );
+        
+        const extractedPromises = processedFiles.map(async (file) => {
+          const documentId = parseInt(file.id.replace('#', ''));
+          try {
+            const detail = await getDocumentDetail(documentId);
+            const extracted = extractInvoiceData(detail.data);
+            return { documentId, detail: extracted };
+          } catch (error) {
+            console.error(`Error fetching detail for document ${documentId}:`, error);
+            return { documentId, detail: null };
+          }
+        });
+        
+        const results = await Promise.all(extractedPromises);
+        const newExtractedData = new Map<number, any>();
+        results.forEach(({ documentId, detail }) => {
+          if (detail) {
+            newExtractedData.set(documentId, detail);
+          }
+        });
+        setExtractedData(newExtractedData);
+        
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -29,25 +60,65 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const data = await getMyFilesData();
-        const processingIndex = data.uploads.findIndex(item => item.status === 'processing');
+        const hasProcessingUploads = uploads.some(item => item.status === 'processing');
         
-        if (processingIndex !== -1 && Math.random() > 0.7) {
-          await updateUploadStatus(processingIndex, 'done');
-          const updatedData = await getFilesData();
-          setUploads(updatedData.uploads);
-          setFiles(updatedData.files);
+        if (hasProcessingUploads) {
+          const data = await getMyFiles();
+          const files = data.data.map(documentToFileData);
+          setFiles(files);
+          
+          const newProcessedFiles = files.filter(file => 
+            file.status === 'paid' && 
+            file.id !== '#000001' && 
+            file.id !== '#000002' &&
+            !extractedData.has(parseInt(file.id.replace('#', '')))
+          );
+          
+          if (newProcessedFiles.length > 0) {
+            const extractedPromises = newProcessedFiles.map(async (file) => {
+              const documentId = parseInt(file.id.replace('#', ''));
+              try {
+                const detail = await getDocumentDetail(documentId);
+                const extracted = extractInvoiceData(detail.data);
+                return { documentId, detail: extracted };
+              } catch (error) {
+                console.error(`Error fetching detail for document ${documentId}:`, error);
+                return { documentId, detail: null };
+              }
+            });
+            
+            const results = await Promise.all(extractedPromises);
+            setExtractedData(prev => {
+              const newMap = new Map(prev);
+              results.forEach(({ documentId, detail }) => {
+                if (detail) {
+                  newMap.set(documentId, detail);
+                }
+              });
+              return newMap;
+            });
+          }
+          
+          setUploads(prev => 
+            prev.map(upload => {
+              const uploadAge = Date.now() - (upload as any).startTime;
+              if (upload.status === 'processing' && uploadAge > 5000) {
+                return { ...upload, status: 'done' as const };
+              }
+              return upload;
+            })
+          );
         }
       } catch (error) {
-        console.error('Error updating upload status:', error);
+        console.error('Error checking upload status:', error);
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [uploads, extractedData]);
 
   const handleUploadStart = (item: UploadItem) => {
-    setUploads(prev => [...prev, item]);
+    setUploads(prev => [...prev, { ...item, startTime: Date.now() }]);
   };
 
   const handleUploadFinish = (itemName: string) => {
@@ -61,8 +132,9 @@ export default function Home() {
     
     setTimeout(async () => {
       try {
-        const data = await getMyFilesData();
-        setFiles(data.files);
+        const data = await getMyFiles();
+        const files = data.data.map(documentToFileData);
+        setFiles(files);
       } catch (error) {
         console.error('Error reloading files:', error);
       }
@@ -77,25 +149,63 @@ export default function Home() {
 
   const handleFileSelect = async (file: File) => {
     try {
-      await addUploadItem(file);
+      const uploadItem: UploadItem = {
+        name: file.name,
+        status: 'processing'
+      };
+      setUploads(prev => [...prev, uploadItem]);
       
-      const data = await getMyFilesData();
-      setUploads(data.uploads);
+      await uploadFile(file);
       
       setTimeout(async () => {
-        const updatedData = await getMyFilesData();
-        setUploads(updatedData.uploads);
-        setFiles(updatedData.files);
+        const data = await getMyFiles();
+        const files = data.data.map(documentToFileData);
+        setFiles(files);
+        
+        setUploads(prev => 
+          prev.map(upload => 
+            upload.name === file.name 
+              ? { ...upload, status: 'done' as const }
+              : upload
+          )
+        );
       }, 2000);
       
     } catch (error) {
       console.error('Error uploading file:', error);
+      setUploads(prev => 
+        prev.map(upload => 
+          upload.name === file.name 
+            ? { ...upload, status: 'done' as const }
+            : upload
+        )
+      );
     }
+  };
+
+  const getExtractedDataForFile = (file: FileData) => {
+    const documentId = parseInt(file.id.replace('#', ''));
+    return extractedData.get(documentId) || null;
+  };
+
+  const getFileDataWithVendor = (file: FileData): FileData => {
+    const extracted = getExtractedDataForFile(file);
+    const updatedFile = { ...file };
+    
+    if (extracted && extracted.vendor && extracted.vendor !== 'Unknown Vendor') {
+      updatedFile.vendor = extracted.vendor;
+    }
+    
+    if (extracted && extracted.totalTtc && extracted.totalTtc !== '') {
+      updatedFile.amount = extracted.totalTtc;
+    }
+    
+    return updatedFile;
   };
 
   const handleViewInvoice = (file: FileData) => {
     if (file.id !== '#000001' && file.id !== '#000002') {
-      window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/documents/${file.id.replace('#', '')}/raw-file`, '_blank');
+      window.open(`${process.env.NEXT_PUBLIC_API_URL}/api/documents/${file.id.replace('#', '')}/raw-file`, '_blank');
     } else {
       alert('Document de démonstration - pas de fichier réel');
     }
@@ -123,13 +233,14 @@ export default function Home() {
            }}>
         
         <DashboardContent
-          files={files}
+          files={files.map(getFileDataWithVendor)}
           uploads={uploads}
           onFileSelect={handleFileSelect}
           onViewInvoice={handleViewInvoice}
           onUploadStart={handleUploadStart}
           onUploadFinish={handleUploadFinish}
           onUploadComplete={handleUploadComplete}
+          getExtractedData={getExtractedDataForFile}
         />
 
       </div>

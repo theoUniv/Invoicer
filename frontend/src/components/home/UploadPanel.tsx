@@ -51,6 +51,17 @@ const getYearsFromFiles = (files: FileData[]) => {
   return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
 };
 
+const getExistingFileTypes = (files: FileData[]): FileType[] => {
+  const existingTypes = new Set<FileType>();
+  files.forEach(file => {
+    if (file.type) {
+      existingTypes.add(file.type);
+    }
+  });
+  const allTypes: FileType[] = ['invoice', 'contract', 'quote', 'expense'];
+  return allTypes.filter(type => existingTypes.has(type));
+};
+
 const getMonthsFromFiles = (files: FileData[], year: string, type: FileType) => {
   const months = new Set<string>();
   files.forEach(file => {
@@ -108,11 +119,6 @@ export function UploadPanel({
     }
   };
 
-  const handleUploadComplete = () => {
-    showTooltipMessage('tooltip.uploadComplete');
-    onUploadComplete?.();
-  };
-
   useEffect(() => {
     if (showTooltip) {
       const timer = setTimeout(() => {
@@ -159,8 +165,7 @@ export function UploadPanel({
     setExpandedYears(newExpanded);
   };
 
-  const fileTypes: FileType[] = ['invoice', 'contract', 'quote', 'expense'];
-  const years = getYearsFromFiles(files);
+  const fileTypes: FileType[] = getExistingFileTypes(files);
 
   return (
     <aside className="w-80 flex-shrink-0 flex flex-col gap-6">
