@@ -24,7 +24,8 @@ def create_invoice_pdf(invoice_data: dict, output_path: Path) -> None:
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    pdf.cell(0, 10, "FACTURE", ln=True, align="C")
+    doc_type_label = "FACTURE" if invoice_data["type"] == "facture" else "DEVIS"
+    pdf.cell(0, 10, doc_type_label, ln=True, align="C")
     pdf.ln(5)
 
     supplier = invoice_data["supplier"]
@@ -39,7 +40,8 @@ def create_invoice_pdf(invoice_data: dict, output_path: Path) -> None:
     pdf.cell(0, 8, f"Adresse : {client['address']}", ln=True)
     pdf.ln(5)
 
-    pdf.cell(0, 8, f"Numéro de facture : {invoice_data['invoice_number']}", ln=True)
+    lbl_num = "Numéro de facture" if invoice_data["type"] == "facture" else "Numéro de devis"
+    pdf.cell(0, 8, f"{lbl_num} : {invoice_data['invoice_number']}", ln=True)
     pdf.cell(0, 8, f"Date d'émission : {invoice_data['issue_date']}", ln=True)
     pdf.ln(5)
 
@@ -93,11 +95,15 @@ def generate_one_invoice(companies: list, index: int, incoherent: bool = False) 
 
     total_tva = round(total_ht * tva_rate, 2)
     total_ttc = round(total_ht + total_tva, 2)
-    issue_date = datetime.today() - timedelta(days=random.randint(0, 365))
+    # Generate dates over the last 4 years instead of 1
+    issue_date = datetime.today() - timedelta(days=random.randint(0, 365 * 4))
+
+    doc_type = random.choice(["facture", "devis"])
+    prefix = "FAC" if doc_type == "facture" else "DEV"
 
     invoice_data = {
-        "type": "invoice",
-        "invoice_number": f"FAC-{issue_date.strftime('%Y%m%d')}-{index:04d}",
+        "type": doc_type,
+        "invoice_number": f"{prefix}-{issue_date.strftime('%Y%m%d')}-{index:04d}",
         "issue_date": issue_date.strftime("%Y-%m-%d"),
         "supplier": supplier,
         "client": client,
