@@ -160,6 +160,31 @@ router.post(
         fieldValue: f.fieldValue !== undefined ? String(f.fieldValue) : null,
       }));
 
+      // --- NEW: Coherence check (HT + TVA = TTC) ---
+      const findVal = (name) => {
+        const field = fields.find(f => f.fieldName === name);
+        if (!field || field.fieldValue === null) return null;
+        const val = parseFloat(String(field.fieldValue).replace(",", "."));
+        return isNaN(val) ? null : val;
+      };
+
+      const ht = findVal("total_ht");
+      const tva = findVal("total_tva");
+      const ttc = findVal("total_ttc");
+
+      if (ht !== null && tva !== null && ttc !== null) {
+        const diff = Math.abs((ht + tva) - ttc);
+        const isIncoherent = diff > 0.05;
+
+        fieldData.push({
+          versionId: newVersion.versionId,
+          fieldName: "is_total_incoherent",
+          fieldValue: String(isIncoherent),
+          validationStatus: isIncoherent ? "invalid" : "valid",
+        });
+      }
+      // ----------------------------------------------
+
       await prisma.documentField.createMany({
         data: fieldData
       });

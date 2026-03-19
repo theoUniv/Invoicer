@@ -131,10 +131,29 @@ def insert_fields(version_id, json_data):
         "client_name": json_data.get("client", {}).get("name"),
         "client_address": json_data.get("client", {}).get("address"),
     }
-    query = "INSERT INTO document_fields (version_id, field_name, field_value) VALUES (%s, %s, %s)"
+    # --- NEW: Coherence check (HT + TVA = TTC) ---
+    ht = fields.get("total_ht")
+    tva = fields.get("total_tva")
+    ttc = fields.get("total_ttc")
+    
+    if ht is not None and tva is not None and ttc is not None:
+        try:
+            diff = abs((float(ht) + float(tva)) - float(ttc))
+            is_incoherent = diff > 0.05
+            fields["is_total_incoherent"] = str(is_incoherent)
+        except (ValueError, TypeError):
+            is_incoherent = None
+    else:
+        is_incoherent = None
+    # ----------------------------------------------
+
+    query = "INSERT INTO document_fields (version_id, field_name, field_value, validation_status) VALUES (%s, %s, %s, %s)"
     for key, value in fields.items():
         if value is not None:
-            cursor.execute(query, (version_id, key, str(value)))
+            status = 'unchecked'
+            if key == "is_total_incoherent":
+                status = 'invalid' if value == "True" else 'valid'
+            cursor.execute(query, (version_id, key, str(value), status))
     connection.commit()
 
 def insert_items(version_id, items):
