@@ -41,7 +41,7 @@ export function OverviewContent({
 
   const [updatedFiles, setUpdatedFiles] = useState<FileData[]>(files);
   const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
-  const statusFilterRef = useRef<'all' | 'paid' | 'pending'>('all');
+  const statusFilterRef = useRef<'all' | 'processed' | 'pending'>('all');
 
   useEffect(() => {
     setFilteredFiles(updatedFiles);
@@ -84,15 +84,15 @@ export function OverviewContent({
     }
   };
 
-  const mapStatusFilterValue = (value: string): 'all' | 'paid' | 'pending' => {
+  const mapStatusFilterValue = (value: string): 'all' | 'processed' | 'pending' => {
     const v = (value ?? '').toLowerCase();
 
     if (v === 'all') return 'all';
-    if (v === 'paid') return 'paid';
+    if (v === 'processed') return 'processed';
     if (v === 'pending') return 'pending';
 
     if (v.includes('pending') || v.includes('en attente') || v.includes('en attente'.toLowerCase())) return 'pending';
-    if (v.includes('paid') || v.includes('pay')) return 'paid';
+    if (v.includes('processed') || v.includes('pay')) return 'processed';
 
     return 'all';
   };
@@ -140,8 +140,8 @@ export function OverviewContent({
     const statusFilteredFiles = newFilteredFiles.filter(file => {
       const raw = (file.status ?? '').toLowerCase();
 
-      if (statusFilter === 'paid') {
-        return raw === 'paid' || raw === 'processed' || raw === 'completed';
+      if (statusFilter === 'processed') {
+        return raw === 'processed' || raw === 'completed';
       }
 
       return raw === 'pending' || raw === 'uploaded' || raw === 'processing';

@@ -57,5 +57,5 @@ export interface Invoice {
   date: string;
   vendor: string;
   amount: string;
-  status: 'paid' | 'pending';
+  status: 'processed' | 'pending';
 }

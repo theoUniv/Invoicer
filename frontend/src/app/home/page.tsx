@@ -25,7 +25,7 @@ export default function Home() {
         setUploads([]);
         
         const processedFiles = files.filter(file => 
-          file.status === 'paid' && file.id !== '#000001' && file.id !== '#000002'
+          file.status === 'processed' && file.id !== '#000001' && file.id !== '#000002'
         );
         
         const extractedPromises = processedFiles.map(async (file) => {
@@ -70,7 +70,7 @@ export default function Home() {
           setFiles(files);
           
           const newProcessedFiles = files.filter(file => 
-            file.status === 'paid' && 
+            file.status === 'processed' && 
             file.id !== '#000001' && 
             file.id !== '#000002' &&
             !extractedData.has(parseInt(file.id.replace('#', '')))

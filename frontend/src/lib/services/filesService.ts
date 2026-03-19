@@ -41,7 +41,7 @@ export async function getFilesData(params?: {
         date: '17 mars 2026',
         vendor: 'Fournisseur Test',
         amount: '—',
-        status: 'paid',
+        status: 'processed',
         type: 'contract',
         fileName: 'contrat_test.pdf'
       }
@@ -87,7 +87,7 @@ export async function getMyFilesData(params?: {
         date: '17 mars 2026',
         vendor: 'Fournisseur Test',
         amount: '—',
-        status: 'paid',
+        status: 'processed',
         type: 'contract',
         fileName: 'contrat_test.pdf'
       }

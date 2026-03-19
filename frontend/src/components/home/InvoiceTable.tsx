@@ -119,7 +119,7 @@ export function InvoiceTable({ files, onViewInvoice, getExtractedData, isLoading
                     {extractedData?.totalTtc || file.amount}
                   </DataTableCell>
                   <DataTableCell>
-                    <StatusBadge status={file.status as 'paid' | 'pending'}>
+                    <StatusBadge status={file.status as 'processed' | 'pending'}>
                       {file.status}
                     </StatusBadge>
                   </DataTableCell>
