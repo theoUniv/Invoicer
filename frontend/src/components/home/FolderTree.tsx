@@ -2,7 +2,7 @@
 
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { ChevronRight, Folder } from 'lucide-react';
-import { FileData, FileType } from '@/lib/files';
+import { FileType, FileData } from '@/lib/types/documents';
 import { useState } from 'react';
 
 interface FolderTreeProps {

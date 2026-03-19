@@ -1,5 +1,5 @@
 import { useAppTranslation } from '@/hooks/useTranslation';
-import { FileType, FileData } from '@/lib/files';
+import { FileData, FileType } from '@/lib/types/documents';
 import { Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 

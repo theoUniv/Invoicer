@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppTranslation } from '@/hooks/useTranslation';
-import { FileData } from '@/lib/files';
+import { FileData } from '@/lib/types/documents';
 
 interface KpiCardsProps {
   files: FileData[];

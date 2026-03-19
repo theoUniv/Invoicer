@@ -1,5 +1,5 @@
 import { FolderGrid } from './FolderGrid';
-import { FileData, FileType } from '@/lib/files';
+import { FileType, FileData } from '@/lib/types/documents';
 
 interface InvoiceFoldersProps {
   files?: FileData[];
