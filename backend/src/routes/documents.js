@@ -139,7 +139,7 @@ router.post(
     }
 
     // Determine new version number
-    const maxVersion = doc.versions.length > 0 
+    const maxVersion = doc.versions.length > 0
       ? Math.max(...doc.versions.map(v => v.versionNumber))
       : 0;
 
@@ -160,7 +160,6 @@ router.post(
         fieldValue: f.fieldValue !== undefined ? String(f.fieldValue) : null,
       }));
 
-      // --- NEW: Coherence check (HT + TVA = TTC) ---
       const findVal = (name) => {
         const field = fields.find(f => f.fieldName === name);
         if (!field || field.fieldValue === null) return null;
@@ -183,14 +182,34 @@ router.post(
           validationStatus: isIncoherent ? "invalid" : "valid",
         });
       }
-      // ----------------------------------------------
+
+      const siretField = fields.find(f => f.fieldName === "siret");
+      if (siretField && siretField.fieldValue) {
+        const siretVal = String(siretField.fieldValue).replace(/\s/g, "");
+        const isLengthOk = /^\d{14}$/.test(siretVal);
+
+        if (!isLengthOk) {
+          const idx = fieldData.findIndex(f => f.fieldName === "siret");
+          if (idx !== -1) fieldData[idx].validationStatus = "invalid";
+        } else {
+          const company = await prisma.company.findUnique({
+            where: { siret: siretVal }
+          });
+          if (!company) {
+            const idx = fieldData.findIndex(f => f.fieldName === "siret");
+            if (idx !== -1) fieldData[idx].validationStatus = "invalid";
+          } else {
+            const idx = fieldData.findIndex(f => f.fieldName === "siret");
+            if (idx !== -1) fieldData[idx].validationStatus = "valid";
+          }
+        }
+      }
 
       await prisma.documentField.createMany({
         data: fieldData
       });
     }
 
-    // Fetch the fully populated new version to return
     const populatedVersion = await prisma.documentVersion.findUnique({
       where: { versionId: newVersion.versionId },
       include: {
