@@ -10,9 +10,19 @@ const { errorHandler } = require("./middleware/errorHandler");
 function createApp() {
   const app = express();
   
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  const allowedOrigins = [
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    "http://localhost:3000",
+  ];
   app.use(cors({
-    origin: frontendUrl,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman) and whitelisted origins
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
     credentials: true
   }));
   app.use(express.json({ limit: "10mb" }));
