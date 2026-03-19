@@ -149,7 +149,7 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                           {version.processor ? (
                             <><User className="w-3 h-3 text-[#6B6B66]" /><span className="text-[10px] text-[#6B6B66] font-medium">{version.processor.firstName} {version.processor.lastName}</span></>
                           ) : (
-                            <><Cpu className="w-3 h-3 text-indigo-500" /><span className="text-[10px] text-indigo-500 font-bold tracking-tight">AI AUTOMATION</span></>
+                            <><span className="text-[10px] text-[#6B6B66] font-medium">Traitement automatique</span></>
                           )}
                         </div>
                       </div>

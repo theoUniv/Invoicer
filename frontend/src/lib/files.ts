@@ -94,19 +94,19 @@ export async function getDocuments(params?: {
   offset?: number;
 }): Promise<DocumentsResponse> {
   const searchParams = new URLSearchParams();
-  
+
   if (params?.status) searchParams.append('status', params.status);
   if (params?.documentTypeId) searchParams.append('documentTypeId', params.documentTypeId.toString());
   if (params?.limit) searchParams.append('limit', params.limit.toString());
   if (params?.offset) searchParams.append('offset', params.offset.toString());
-  
+
   const url = `${API_BASE_URL}/documents${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-  
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
-  
+
   try {
-    const response = await fetch(url, { 
+    const response = await fetch(url, {
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
@@ -114,20 +114,20 @@ export async function getDocuments(params?: {
     });
 
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const result = await response.json();
     console.log('Documents API response:', result);
-    
+
     errorCount = 0;
-    
+
     return result;
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     const now = Date.now();
     if (now - lastErrorTime < 10000) {
       errorCount++;
@@ -135,11 +135,11 @@ export async function getDocuments(params?: {
       errorCount = 1;
     }
     lastErrorTime = now;
-    
+
     if (errorCount <= 2) {
       console.error('Error fetching documents:', error);
     }
-    
+
     throw error;
   }
 }
@@ -147,7 +147,7 @@ export async function getDocuments(params?: {
 export async function getDocument(id: number): Promise<Document> {
   const url = `${API_BASE_URL}/files/${id}`;
   const token = getAuthCookie();
-  
+
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -165,13 +165,13 @@ export async function getDocument(id: number): Promise<Document> {
 
 function documentToFileData(doc: Document): FileData {
   const vendor = doc.companyLinks && doc.companyLinks.length > 0 ? doc.companyLinks[0].company.name : 'Unknown Compagny';
-  
-  const date = new Date(doc.uploadedAt).toLocaleDateString('fr-FR', { 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric' 
+
+  const date = new Date(doc.uploadedAt).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
   });
-  
+
   const mapDocumentType = (docTypeName: string): FileType => {
     switch (docTypeName.toLowerCase()) {
       case 'invoice':
@@ -190,7 +190,7 @@ function documentToFileData(doc: Document): FileData {
         return 'other';
     }
   };
-  
+
   const mapStatus = (status: string): string => {
     switch (status.toLowerCase()) {
       case 'processed':
@@ -204,7 +204,7 @@ function documentToFileData(doc: Document): FileData {
         return status;
     }
   };
-  
+
   return {
     id: `#${doc.documentId.toString().padStart(6, '0')}`,
     date,
@@ -225,14 +225,14 @@ export async function getFilesData(params?: {
   try {
     const documentsResponse = await getDocuments(params);
     const files = documentsResponse.data.map(documentToFileData);
-    
+
     return {
       files,
       uploads: []
     };
   } catch (error) {
     console.error('Error fetching documents:', error);
-    
+
     const fallbackFiles: FileData[] = [
       {
         id: '#000001',
@@ -244,7 +244,7 @@ export async function getFilesData(params?: {
         fileName: 'facture_demo.pdf'
       },
       {
-        id: '#000002', 
+        id: '#000002',
         date: '17 mars 2026',
         vendor: 'Fournisseur Test',
         amount: '—',
@@ -253,7 +253,7 @@ export async function getFilesData(params?: {
         fileName: 'contrat_test.pdf'
       }
     ];
-    
+
     return {
       files: fallbackFiles,
       uploads: []
@@ -268,40 +268,40 @@ export async function getMyFiles(params?: {
   offset?: number;
 }): Promise<DocumentsResponse> {
   const searchParams = new URLSearchParams();
-  
+
   if (params?.status) searchParams.append('status', params.status);
   if (params?.documentTypeId) searchParams.append('documentTypeId', params.documentTypeId.toString());
   if (params?.limit) searchParams.append('limit', params.limit.toString());
   if (params?.offset) searchParams.append('offset', params.offset.toString());
-  
+
   const url = `${API_BASE_URL}/files/myfiles${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-  
+
   const token = getAuthCookie();
-  
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
-  
+
   try {
-    const response = await fetch(url, { 
+    const response = await fetch(url, {
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         ...(token && { 'Authorization': `Bearer ${token}` })
       }
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     errorCount = 0;
-    
+
     return response.json();
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     const now = Date.now();
     if (now - lastErrorTime < 10000) {
       errorCount++;
@@ -309,11 +309,11 @@ export async function getMyFiles(params?: {
       errorCount = 1;
     }
     lastErrorTime = now;
-    
+
     if (errorCount <= 2) {
       console.error('Error fetching my files:', error);
     }
-    
+
     throw error;
   }
 }
@@ -327,7 +327,7 @@ export async function getMyFilesData(params?: {
   try {
     const documentsResponse = await getMyFiles(params);
     const files = documentsResponse.data.map(documentToFileData);
-    
+
     return {
       files,
       uploads: []
@@ -347,7 +347,7 @@ export async function getMyFilesData(params?: {
         fileName: 'facture_demo.pdf'
       },
       {
-        id: '#000002', 
+        id: '#000002',
         date: '17 mars 2026',
         vendor: 'Fournisseur Test',
         amount: '—',
@@ -356,7 +356,7 @@ export async function getMyFilesData(params?: {
         fileName: 'contrat_test.pdf'
       }
     ];
-    
+
     return {
       files: fallbackFiles,
       uploads: []
@@ -366,14 +366,14 @@ export async function getMyFilesData(params?: {
 
 export async function uploadFile(file: File): Promise<{ success: boolean; error?: string }> {
   const API_BASE_URL = 'http://72.60.37.180:3001/api';
-  
+
   try {
     const formData = new FormData();
     formData.append('files', file);
     formData.append('documentTypeId', '1');
-    
+
     const token = getAuthCookie();
-    
+
     const response = await fetch(`${API_BASE_URL}/files/upload`, {
       method: 'POST',
       headers: {
@@ -381,18 +381,18 @@ export async function uploadFile(file: File): Promise<{ success: boolean; error?
       },
       body: formData,
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
     }
-    
+
     return { success: true };
   } catch (error) {
     console.error('Error uploading file:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Erreur lors de l\'upload' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur lors de l\'upload'
     };
   }
 }

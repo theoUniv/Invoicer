@@ -16,14 +16,14 @@ export async function getFilesData(params?: {
   try {
     const documentsResponse = await getDocuments(params);
     const files = documentsResponse.data.map(documentToFileData);
-    
+
     return {
       files,
       uploads: []
     };
   } catch (error) {
     console.error('Error fetching documents:', error);
-    
+
     // SI JAMAIS API DOWN, DONNEES FICTIVES
     const fallbackFiles: FileData[] = [
       {
@@ -36,7 +36,7 @@ export async function getFilesData(params?: {
         fileName: 'facture_demo.pdf'
       },
       {
-        id: '#000002', 
+        id: '#000002',
         date: '17 mars 2026',
         vendor: 'Fournisseur Test',
         amount: '—',
@@ -45,7 +45,7 @@ export async function getFilesData(params?: {
         fileName: 'contrat_test.pdf'
       }
     ];
-    
+
     return {
       files: fallbackFiles,
       uploads: []
@@ -62,7 +62,7 @@ export async function getMyFilesData(params?: {
   try {
     const documentsResponse = await getMyFiles(params);
     const files = documentsResponse.data.map(documentToFileData);
-    
+
     return {
       files,
       uploads: []
@@ -82,7 +82,7 @@ export async function getMyFilesData(params?: {
         fileName: 'facture_demo.pdf'
       },
       {
-        id: '#000002', 
+        id: '#000002',
         date: '17 mars 2026',
         vendor: 'Fournisseur Test',
         amount: '—',
@@ -91,7 +91,7 @@ export async function getMyFilesData(params?: {
         fileName: 'contrat_test.pdf'
       }
     ];
-    
+
     return {
       files: fallbackFiles,
       uploads: []
