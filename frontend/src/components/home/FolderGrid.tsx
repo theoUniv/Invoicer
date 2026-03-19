@@ -21,7 +21,7 @@ const getFileIcon = (type: string) => {
   switch (type) {
     case 'invoice':
       return <FileText className="w-10 h-10 text-[#121212]" />;
-    case 'quote':
+    case 'devis':
       return <FileText className="w-10 h-10 text-[#121212]" />;
     default:
       return <File className="w-10 h-10 text-[#121212]" />;
@@ -34,7 +34,7 @@ const getFolderLabel = (type: FileType, t: any) => {
       return t('dashboard.folders.invoices');
     case 'contract':
       return t('dashboard.folders.contracts');
-    case 'quote':
+    case 'devis':
       return t('dashboard.folders.quotes');
     case 'expense':
       return t('dashboard.folders.expenses');
