@@ -4,3 +4,7 @@ pillow
 numpy
 pdf2image
 spacy
+minio
+python-dotenv
+mysql-connector-python
+PyYAML

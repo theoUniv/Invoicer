@@ -1,0 +1,7 @@
+faker
+fpdf2
+Pillow
+pymongo
+pandas
+pyyaml
+boto3
