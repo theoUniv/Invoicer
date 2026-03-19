@@ -1,9 +1,11 @@
 import { useContextMenu } from '@/components/ui/ContextMenu';
 import { FileData, FileType } from '@/lib/types/documents';
 import { Download, Eye, File, FileText, FolderOpen, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { FileModal } from './FileModal';
+import { getDocumentDetail } from '@/lib/api';
+import { extractInvoiceData } from '@/lib/utils/documentDetailTransform';
 
 interface FolderGridProps {
   files: FileData[];
@@ -82,6 +84,68 @@ export function FolderGrid({
   const { showContextMenu, ContextMenuComponent } = useContextMenu();
   const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [extractedData, setExtractedData] = useState<Map<number, any>>(new Map());
+
+  useEffect(() => {
+    const fetchDocumentDetails = async () => {
+      const paidFiles = files.filter(file => 
+        file.status === 'paid' && 
+        file.id !== '#000001' && 
+        file.id !== '#000002' &&
+        !extractedData.has(parseInt(file.id.replace('#', '')))
+      );
+
+      if (paidFiles.length > 0) {
+        const promises = paidFiles.map(async (file) => {
+          const documentId = parseInt(file.id.replace('#', ''));
+          try {
+            const detail = await getDocumentDetail(documentId);
+            const extracted = extractInvoiceData(detail.data);
+            return { documentId, detail: extracted };
+          } catch (error) {
+            console.error(`Error fetching detail for document ${documentId}:`, error);
+            return { documentId, detail: null };
+          }
+        });
+
+        const results = await Promise.all(promises);
+        const newExtractedData = new Map<number, any>();
+        results.forEach(({ documentId, detail }) => {
+          if (detail) {
+            newExtractedData.set(documentId, detail);
+          }
+        });
+
+        if (newExtractedData.size > 0) {
+          setExtractedData(prev => new Map([...prev, ...newExtractedData]));
+        }
+      }
+    };
+
+    if (shouldShowFiles && files.length > 0) {
+      fetchDocumentDetails();
+    }
+  }, [files, shouldShowFiles]);
+
+  const getExtractedDataForFile = (file: FileData) => {
+    const documentId = parseInt(file.id.replace('#', ''));
+    return extractedData.get(documentId) || null;
+  };
+
+  const getFileDataWithDetails = (file: FileData): FileData => {
+    const extracted = getExtractedDataForFile(file);
+    const updatedFile = { ...file };
+    
+    if (extracted && extracted.vendor && extracted.vendor !== 'Unknown Vendor') {
+      updatedFile.vendor = extracted.vendor;
+    }
+    
+    if (extracted && extracted.totalTtc && extracted.totalTtc !== '') {
+      updatedFile.amount = extracted.totalTtc;
+    }
+    
+    return updatedFile;
+  };
 
   const handleFileRightClick = (e: React.MouseEvent, file: FileData) => {
     e.preventDefault();
@@ -165,24 +229,27 @@ export function FolderGrid({
           );
         })}
         
-        {shouldShowFiles && files.map((file, index) => (
-          <div 
-            key={`file-${index}`}
-            className="file-card flex flex-col items-center text-center gap-3 p-6 rounded border border-transparent transition-all duration-200 cursor-pointer hover:bg-white/50 hover:border-[rgba(18,18,18,0.12)]"
-            onClick={() => onViewFile(file)}
-            onContextMenu={(e) => handleFileRightClick(e, file)}
-          >
-            <div className="w-20 h-20 bg-transparent border-none flex items-center justify-center relative">
-              {getFileIcon(file.type)}
+        {shouldShowFiles && files.map((file, index) => {
+          const fileWithDetails = getFileDataWithDetails(file);
+          return (
+            <div 
+              key={`file-${index}`}
+              className="file-card flex flex-col items-center text-center gap-3 p-6 rounded border border-transparent transition-all duration-200 cursor-pointer hover:bg-white/50 hover:border-[rgba(18,18,18,0.12)]"
+              onClick={() => onViewFile(fileWithDetails)}
+              onContextMenu={(e) => handleFileRightClick(e, fileWithDetails)}
+            >
+              <div className="w-20 h-20 bg-transparent border-none flex items-center justify-center relative">
+                {getFileIcon(fileWithDetails.type)}
+              </div>
+              <span className="text-sm text-[#121212] break-all line-clamp-2 overflow-hidden">
+                {fileWithDetails.fileName}
+              </span>
+              <span className="text-xs text-[#6B6B66] uppercase">
+                {fileWithDetails.amount}
+              </span>
             </div>
-            <span className="text-sm text-[#121212] break-all line-clamp-2 overflow-hidden">
-              {file.fileName}
-            </span>
-            <span className="text-xs text-[#6B6B66] uppercase">
-              {file.amount}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {ContextMenuComponent}

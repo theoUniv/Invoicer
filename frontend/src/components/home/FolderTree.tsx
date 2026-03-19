@@ -58,6 +58,17 @@ const getMonthsFromFiles = (files: FileData[], year: string, type: FileType) => 
   return Array.from(months).sort((a, b) => parseInt(a) - parseInt(b));
 };
 
+const getExistingFileTypes = (files: FileData[]): FileType[] => {
+  const existingTypes = new Set<FileType>();
+  files.forEach(file => {
+    if (file.type) {
+      existingTypes.add(file.type);
+    }
+  });
+  const allTypes: FileType[] = ['invoice', 'contract', 'quote', 'expense'];
+  return allTypes.filter(type => existingTypes.has(type));
+};
+
 export function FolderTree({
   files,
   onFolderSelect,
@@ -104,7 +115,7 @@ export function FolderTree({
     setExpandedYears(newExpanded);
   };
 
-  const fileTypes: FileType[] = ['invoice', 'contract', 'quote', 'expense'];
+  const fileTypes: FileType[] = getExistingFileTypes(files);
   const years = getYearsFromFiles(files);
 
   return (
