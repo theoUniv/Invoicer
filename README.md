@@ -1,54 +1,65 @@
-# Invoicer
+# Invoicer - Plateforme de Traitement de Documents
 
-Projet d'extraction et de traitement de factures.
+Invoicer est une solution complète de traitement de factures et de devis, permettant l'ingestion automatisée, l'extraction de données via OCR/NLP et la validation manuelle via une interface web réactive.
 
-## Structure du projet
+## Architecture du Projet
 
-- **backend/**: API NodeJS / Express
-- **frontend/**: React / Next.js
-- **ocr-model/**: Modèle IA pour extraction des factures (PaddleOCR)
-- **airflow-dags/**: DAGs Apache Airflow pour le pipeline d'ingestion
-- **spark-jobs/**: Jobs Spark pour le batch processing
-- **docker/**: Fichiers de configuration Docker et Docker Compose
+Le projet repose sur une architecture modulaire orchestrée par Docker :
 
-## Installation
+- **Frontend** : Application Next.js (port 3000) offrant un tableau de bord de suivi et un éditeur de versions avec validation en temps réel.
+- **Backend API** : Serveur Node.js/Express (port 3001) avec Prisma ORM pour la gestion de la base de données MySQL.
+- **Pipeline de Données** : Apache Airflow gérant le cycle de vie des documents (Raw -> Silver -> Gold).
+- **Service OCR/NLP** : Suite d'outils Python utilisant Tesseract et SpaCy pour l'extraction structurée.
+- **Stockage** : Instance MinIO (S3-compatible) pour la persistence des fichiers PDF et des résultats JSON.
 
-Un guide détaillé pour le déploiement sur VPS est disponible ici : [Guide de Déploiement sur VPS](file:///Users/theo-dev/Dev/M2_IPSSI/hackathon/Invoicer/vps_deployment_guide.md)
+## Fonctionnalités Clés
 
-### Base de données (MySQL, MinIO)
+### 1. Ingestion Automatisée
+- Surveillance des nouveaux fichiers dans le bucket MinIO `raw`.
+- Pipeline Airflow déclenché automatiquement pour le traitement OCR.
+- Détection dynamique du type de document (Facture vs Devis).
 
-Pour instancier toute l'infrastructure sur votre VPS ou localement :
+### 2. Extraction & Enrichissement
+- Extraction des entités : Numéro de facture/devis, SIRET, montants (HT/TVA/TTC), dates.
+- Enrichissement via base de données pour l'identification des fournisseurs et clients.
+- Calcul automatique des taux de TVA et vérification de cohérence mathématique.
 
-1. **Préparer l'environnement** :
-   ```bash
-   cp .env.example .env
-   # Modifiez .env si nécessaire (credentials MinIO ajoutés)
-   ```
+### 3. Interface de Validation (UI/UX)
+- **Validation Temps Réel** : Surlignage en rouge des champs incohérents (HT + TVA != TTC) ou SIRET invalide (format 14 chiffres).
+- **Vérification SIRET** : Requête API en direct pour vérifier si l'entreprise existe dans le référentiel.
+- **Gestion des Versions** : Historisation complète des modifications avec badges d'erreur visuels (TVA/SIRET).
+- **Export** : Prévisualisation et téléchargement des documents originaux.
 
-2. **Lancer les services** :
-   ```bash
-   docker compose up -d
-   ```
+## Installation et Déploiement
 
-### Initialisation des données (Seeder)
+### Prérequis
+- Docker et Docker Compose
+- Accès Internet pour la récupération des images et dépendances
 
-Pour peupler automatiquement MySQL, MinIO et MongoDB avec des données de test (entreprises, factures PDF, records JSON) :
+### Lancement via Docker Compose
+Pour déployer l'ensemble de la pile sur un serveur (VPS) :
 
 ```bash
-docker compose --profile seeder run seeder
+git clone https://github.com/theoUniv/Invoicer.git
+cd Invoicer
+# Editez le fichier .env avec vos configurations IP/Ports
+docker compose up -d --build
 ```
 
-## Accès aux services
+### Accès aux Services
+- **Frontend** : `http://votre-ip:3000`
+- **Backend API** : `http://votre-ip:3001`
+- **MinIO Console** : `http://votre-ip:9001` (User: `minioadmin` / Pass: `minioadmin123`)
+- **Airflow UI** : `http://votre-ip:8080`
 
-- **MinIO Console (Web)** : `http://<IP>:9001` (User: `minioadmin` / Pass: `minioadmin123`)
-- **MinIO API (S3)** : Port `9000`
+## Structure du Repository
 
-## Vérification
-
-Pour vérifier MySQL :
-```bash
-docker exec -it invoicer-db mysql -u invoicer_user -p invoicer_db -e "SHOW TABLES;"
+```text
+.
+├── backend/            # API Express & Scripts OCR/NLP
+├── frontend/           # Application Next.js
+├── data/               # Données locales (raw/silver/gold)
+├── airflow-dags/       # Définition des pipelines ETL
+├── docker-compose.yml  # Orchestration des services
+└── .env.example        # Modèle de configuration environnementale
 ```
-
-Pour vérifier MinIO :
-Connectez-vous à la console web (`http://IP:9001`) et vérifiez les buckets `raw`, `clean` et `curated`.
