@@ -4,6 +4,7 @@ import { uploadFile } from '../api/uploadFile';
 import { getDocumentDetail } from '../api/getDocumentDetail';
 import { documentToFileData } from '../utils/documentTransform';
 import { extractInvoiceData } from '../utils/documentDetailTransform';
+import { createDocumentVersion } from '../api/createDocumentVersion';
 import { FilesData, FileData } from '../types/documents';
 import { ExtractedInvoiceData } from '../utils/documentDetailTransform';
 
@@ -119,4 +120,4 @@ export async function getInvoiceDetail(documentId: number): Promise<ExtractedInv
   }
 }
 
-export { uploadFile };
+export { uploadFile, createDocumentVersion };
