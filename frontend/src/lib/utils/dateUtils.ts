@@ -78,7 +78,7 @@ export function groupFilesByHierarchy(files: FileData[]) {
 
 export function getTypesFromGroups(groups: Record<string, Record<string, Record<string, FileData[]>>>): FileType[] {
   return Object.keys(groups).filter(type => 
-    ['invoice', 'contract', 'quote', 'expense'].includes(type)
+    ['invoice', 'contract', 'devis', 'expense'].includes(type)
   ) as FileType[];
 }
 

@@ -13,9 +13,8 @@ export function documentToFileData(doc: Document): FileData {
       case 'contract':
       case 'contrat':
         return 'contract';
-      case 'quote':
       case 'devis':
-        return 'quote';
+        return 'devis';
       case 'expense':
       case 'dépense':
         return 'expense';

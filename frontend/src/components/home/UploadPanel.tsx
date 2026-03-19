@@ -28,7 +28,7 @@ const getFolderLabel = (type: FileType, t: any) => {
       return t('dashboard.folders.invoices');
     case 'contract':
       return t('dashboard.folders.contracts');
-    case 'quote':
+    case 'devis':
       return t('dashboard.folders.quotes');
     case 'expense':
       return t('dashboard.folders.expenses');
@@ -78,7 +78,7 @@ const getExistingFileTypes = (files: FileData[]): FileType[] => {
       existingTypes.add(file.type);
     }
   });
-  const allTypes: FileType[] = ['invoice', 'contract', 'quote', 'expense'];
+  const allTypes: FileType[] = ['invoice', 'contract', 'devis', 'expense'];
   return allTypes.filter(type => existingTypes.has(type));
 };
 

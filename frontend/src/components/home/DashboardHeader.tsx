@@ -25,8 +25,8 @@ const getFolderLabel = (type: FileType, t: any) => {
       return t('dashboard.folders.invoices');
     case 'contract':
       return t('dashboard.folders.contracts');
-    case 'quote':
-      return t('dashboard.folders.quotes');
+    case 'devis':
+      return t('dashboard.folders.devis');
     case 'expense':
       return t('dashboard.folders.expenses');
     default:
