@@ -3,11 +3,9 @@ import { Document, FileData, FileType } from '../types/documents';
 export function documentToFileData(doc: Document): FileData {
   const vendor = doc.companyLinks && doc.companyLinks.length > 0 ? doc.companyLinks[0].company.name : 'Unknown Vendor';
   
-  const date = new Date(doc.uploadedAt).toLocaleDateString('fr-FR', { 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric' 
-  });
+  const date = doc.uploadedAt;
+  
+  console.log('documentToFileData - Using uploadedAt:', { documentId: doc.documentId, date });
   
   const mapDocumentType = (docTypeName: string): FileType => {
     switch (docTypeName.toLowerCase()) {

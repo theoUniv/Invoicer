@@ -1,14 +1,20 @@
 'use client';
 
 import { ViewToggle } from '@/components/ui';
-import { useState } from 'react';
-import { DashboardHeader } from './DashboardHeader';
-import { InvoiceTable } from './InvoiceTable';
-import { InvoiceFolders } from './InvoiceFolders';
-import { KpiCards } from './KpiCards';
-import { FolderTree } from './FolderTree';
+import { useState, useEffect } from 'react';
+import { DataTable, DataTableHeader, DataTableRow, DataTableCell, DataTableHeaderCell } from '@/components/ui/DataTable';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Button } from '@/components/ui';
+import { useAppTranslation } from '@/hooks/useTranslation';
 import { FileData, FileType } from '@/lib/types/documents';
 import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
+import { groupFilesByHierarchy, getTypesFromGroups, getYearsForType, getMonthsForTypeAndYear, normalizeDateString } from '@/lib/utils/dateUtils';
+import { updateFileDatesWithExtractedData } from '@/lib/utils/fileDateUpdater';
+import { KpiCards } from './KpiCards';
+import { DashboardHeader } from './DashboardHeader';
+import { InvoiceTable } from './InvoiceTable';
+import { FolderTree } from './FolderTree';
+import { InvoiceFolders } from './InvoiceFolders';
 
 interface OverviewContentProps {
   files: FileData[];
@@ -34,6 +40,31 @@ export function OverviewContent({
     month?: string;
   } | undefined>(undefined);
 
+  const [updatedFiles, setUpdatedFiles] = useState<FileData[]>(files);
+
+  useEffect(() => {
+    if (getExtractedData) {
+      const extractedDataMap = new Map<number, ExtractedInvoiceData>();
+
+      files.forEach((file) => {
+        const extracted = getExtractedData(file);
+        if (extracted) {
+          const documentId = parseInt(file.id.replace('#', ''));
+          extractedDataMap.set(documentId, extracted);
+        }
+      });
+
+      if (extractedDataMap.size > 0) {
+        const filesWithCorrectDates = updateFileDatesWithExtractedData(files, extractedDataMap);
+        setUpdatedFiles(filesWithCorrectDates);
+      } else {
+        setUpdatedFiles(files);
+      }
+    } else {
+      setUpdatedFiles(files);
+    }
+  }, [files, getExtractedData]);
+
   const handleFolderSelect = (folder: { type: FileType; year?: string; month?: string } | undefined) => {
     setCurrentFolder(folder);
   };
@@ -50,19 +81,23 @@ export function OverviewContent({
 
   const getFilteredFiles = () => {
     if (!currentFolder) {
-      return files;
+      return updatedFiles;
     }
 
-    return files.filter(file => {
+    return updatedFiles.filter(file => {
       if (file.type !== currentFolder.type) return false;
 
       if (currentFolder.year) {
-        const fileYear = new Date(file.date).getFullYear().toString();
+        const fileDate = normalizeDateString(file.date);
+        if (!fileDate) return false;
+        const fileYear = fileDate.getFullYear().toString();
         if (fileYear !== currentFolder.year) return false;
       }
 
       if (currentFolder.month) {
-        const fileMonth = (new Date(file.date).getMonth() + 1).toString().padStart(2, '0');
+        const fileDate = normalizeDateString(file.date);
+        if (!fileDate) return false;
+        const fileMonth = (fileDate.getMonth() + 1).toString().padStart(2, '0');
         if (fileMonth !== currentFolder.month) return false;
       }
 
@@ -71,35 +106,21 @@ export function OverviewContent({
   };
 
   const getSubFolders = () => {
+    const fileGroups = groupFilesByHierarchy(updatedFiles);
+    
     if (!currentFolder) {
-      const types = new Set<FileType>();
-      files.forEach(file => types.add(file.type));
-      return Array.from(types).map(type => ({ type }));
+      const types = getTypesFromGroups(fileGroups);
+      return types.map(type => ({ type }));
     }
 
     if (currentFolder.type && !currentFolder.year) {
-      const years = new Set<string>();
-      files.forEach(file => {
-        if (file.type === currentFolder.type) {
-          years.add(new Date(file.date).getFullYear().toString());
-        }
-      });
-      return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a))
-        .map(year => ({ type: currentFolder.type, year }));
+      const years = getYearsForType(fileGroups, currentFolder.type);
+      return years.map(year => ({ type: currentFolder.type, year }));
     }
 
     if (currentFolder.type && currentFolder.year && !currentFolder.month) {
-      const months = new Set<string>();
-      files.forEach(file => {
-        if (file.type === currentFolder.type) {
-          const fileYear = new Date(file.date).getFullYear().toString();
-          if (fileYear === currentFolder.year) {
-            months.add((new Date(file.date).getMonth() + 1).toString().padStart(2, '0'));
-          }
-        }
-      });
-      return Array.from(months).sort((a, b) => parseInt(a) - parseInt(b))
-        .map(month => ({ type: currentFolder.type, year: currentFolder.year, month }));
+      const months = getMonthsForTypeAndYear(fileGroups, currentFolder.type, currentFolder.year);
+      return months.map(month => ({ type: currentFolder.type, year: currentFolder.year, month }));
     }
 
     return [];
@@ -135,12 +156,12 @@ export function OverviewContent({
         ) : (
           <div className="flex">
             <FolderTree
-              files={files}
+              files={updatedFiles}
               onFolderSelect={handleFolderSelect}
               currentFolder={currentFolder}
             />
             <InvoiceFolders
-              files={getFilteredFiles()}
+              files={updatedFiles}
               subFolders={getSubFolders()}
               currentFolder={currentFolder}
               onFolderSelect={handleFolderSelect}

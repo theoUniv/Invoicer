@@ -4,6 +4,7 @@ import { Button } from '@/components/ui';
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { FileData } from '@/lib/types/documents';
 import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
+import { formatDate } from '@/lib/utils/dateFormatter';
 import { useState } from 'react';
 import { FileModal } from './FileModal';
 
@@ -14,7 +15,7 @@ interface InvoiceTableProps {
 }
 
 export function InvoiceTable({ files, onViewInvoice, getExtractedData }: InvoiceTableProps) {
-  const { t } = useAppTranslation();
+  const { t, i18n } = useAppTranslation();
   const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -59,7 +60,7 @@ export function InvoiceTable({ files, onViewInvoice, getExtractedData }: Invoice
                   )}
                 </DataTableCell>
                 <DataTableCell className="text-black">
-                  {extractedData?.issueDate || file.date}
+                  {formatDate(extractedData?.issueDate || file.date, t, i18n)}
                 </DataTableCell>
                 <DataTableCell className="font-medium text-black">
                   {file.vendor}

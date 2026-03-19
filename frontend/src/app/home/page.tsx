@@ -7,12 +7,14 @@ import { documentToFileData } from '@/lib/utils/documentTransform';
 import { extractInvoiceData } from '@/lib/utils/documentDetailTransform';
 import { FileData, UploadItem } from '@/lib/types/documents';
 import { useEffect, useState } from 'react';
+import { useAppTranslation } from '@/hooks/useTranslation';
 
 export default function Home() {
   const [files, setFiles] = useState<FileData[]>([]);
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [extractedData, setExtractedData] = useState<Map<number, any>>(new Map());
+  const { translations, currentLanguage } = useAppTranslation();
 
   useEffect(() => {
     const loadData = async () => {
@@ -29,8 +31,8 @@ export default function Home() {
         const extractedPromises = processedFiles.map(async (file) => {
           const documentId = parseInt(file.id.replace('#', ''));
           try {
-            const detail = await getDocumentDetail(documentId);
-            const extracted = extractInvoiceData(detail.data);
+            const detail = await getDocumentDetail(documentId, translations, currentLanguage);
+            const extracted = extractInvoiceData(detail.data, translations, currentLanguage);
             return { documentId, detail: extracted };
           } catch (error) {
             console.error(`Error fetching detail for document ${documentId}:`, error);
@@ -55,7 +57,7 @@ export default function Home() {
     };
 
     loadData();
-  }, []);
+  }, [translations, currentLanguage]);
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -78,8 +80,8 @@ export default function Home() {
             const extractedPromises = newProcessedFiles.map(async (file) => {
               const documentId = parseInt(file.id.replace('#', ''));
               try {
-                const detail = await getDocumentDetail(documentId);
-                const extracted = extractInvoiceData(detail.data);
+                const detail = await getDocumentDetail(documentId, translations, currentLanguage);
+                const extracted = extractInvoiceData(detail.data, translations, currentLanguage);
                 return { documentId, detail: extracted };
               } catch (error) {
                 console.error(`Error fetching detail for document ${documentId}:`, error);

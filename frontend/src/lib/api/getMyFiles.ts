@@ -1,4 +1,4 @@
-import { getAuthCookie } from '../auth';
+import { getAuthCookie, removeAuthCookie } from '../auth';
 import { DocumentsResponse } from '../types/documents';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -38,6 +38,12 @@ export async function getMyFiles(params?: {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      if (response.status === 401) {
+        removeAuthCookie();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
