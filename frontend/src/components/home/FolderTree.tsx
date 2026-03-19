@@ -1,8 +1,9 @@
 'use client';
 
 import { useAppTranslation } from '@/hooks/useTranslation';
+import { FileData, FileType } from '@/lib/types/documents';
+import { getMonthsForTypeAndYear, getTypesFromGroups, getYearsForType, groupFilesByHierarchy } from '@/lib/utils/dateUtils';
 import { ChevronRight, Folder } from 'lucide-react';
-import { FileType, FileData } from '@/lib/types/documents';
 import { useState } from 'react';
 
 interface FolderTreeProps {
@@ -32,41 +33,27 @@ const getFolderLabel = (type: FileType, t: any) => {
 
 const getMonthLabel = (month: string, t: any) => {
   const months = t('dashboard.folders.months');
-  return months[month] || month;
-};
 
-const getYearsFromFiles = (files: FileData[]) => {
-  const years = new Set<string>();
-  files.forEach(file => {
-    const year = new Date(file.date).getFullYear().toString();
-    years.add(year);
-  });
-  return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
-};
+  if (months && typeof months === 'object' && !Array.isArray(months)) {
+    return months[month] || month;
+  }
 
-const getMonthsFromFiles = (files: FileData[], year: string, type: FileType) => {
-  const months = new Set<string>();
-  files.forEach(file => {
-    if (file.type === type) {
-      const fileYear = new Date(file.date).getFullYear().toString();
-      if (fileYear === year) {
-        const month = new Date(file.date).getMonth() + 1;
-        months.add(month.toString().padStart(2, '0'));
-      }
-    }
-  });
-  return Array.from(months).sort((a, b) => parseInt(a) - parseInt(b));
-};
+  const monthMap: Record<string, string> = {
+    '01': 'Janvier',
+    '02': 'Février',
+    '03': 'Mars',
+    '04': 'Avril',
+    '05': 'Mai',
+    '06': 'Juin',
+    '07': 'Juillet',
+    '08': 'Août',
+    '09': 'Septembre',
+    '10': 'Octobre',
+    '11': 'Novembre',
+    '12': 'Décembre',
+  };
 
-const getExistingFileTypes = (files: FileData[]): FileType[] => {
-  const existingTypes = new Set<FileType>();
-  files.forEach(file => {
-    if (file.type) {
-      existingTypes.add(file.type);
-    }
-  });
-  const allTypes: FileType[] = ['invoice', 'contract', 'quote', 'expense'];
-  return allTypes.filter(type => existingTypes.has(type));
+  return monthMap[month] || month;
 };
 
 export function FolderTree({
@@ -77,6 +64,10 @@ export function FolderTree({
   const { t } = useAppTranslation();
   const [expandedTypes, setExpandedTypes] = useState<Set<FileType>>(new Set());
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
+
+  const fileGroups = groupFilesByHierarchy(files);
+
+  const fileTypes: FileType[] = getTypesFromGroups(fileGroups);
 
   const toggleType = (type: FileType) => {
     const newExpanded = new Set(expandedTypes);
@@ -115,15 +106,12 @@ export function FolderTree({
     setExpandedYears(newExpanded);
   };
 
-  const fileTypes: FileType[] = getExistingFileTypes(files);
-  const years = getYearsFromFiles(files);
-
   return (
-    <aside className="w-80 flex-shrink-0 flex flex-col gap-6 mt-10">
+    <aside className="w-80 shrink-0 flex flex-col gap-6 mt-10">
       <div>
         <div className="mb-8">
           {fileTypes.map((type) => {
-            const typeYears = getYearsFromFiles(files.filter(f => f.type === type));
+            const typeYears = getYearsForType(fileGroups, type);
             const isCurrentType = currentFolder?.type === type;
             const isExpanded = expandedTypes.has(type);
 
@@ -153,7 +141,7 @@ export function FolderTree({
                 >
                   <div className="ml-7 border-l border-[rgba(18,18,18,0.12)] pl-4">
                     {typeYears.map((year) => {
-                      const yearMonths = getMonthsFromFiles(files, year, type);
+                      const yearMonths = getMonthsForTypeAndYear(fileGroups, type, year);
                       const isCurrentYear = currentFolder?.year === year && currentFolder?.type === type;
                       const isYearExpanded = expandedYears.has(`${type}-${year}`);
 

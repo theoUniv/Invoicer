@@ -14,9 +14,9 @@ export async function getDocuments(params?: {
   const searchParams = new URLSearchParams();
 
   if (params?.status) searchParams.append('status', params.status);
-  if (params?.documentTypeId) searchParams.append('documentTypeId', params.documentTypeId.toString());
-  if (params?.limit) searchParams.append('limit', params.limit.toString());
-  if (params?.offset) searchParams.append('offset', params.offset.toString());
+  if (params?.documentTypeId !== undefined) searchParams.append('documentTypeId', params.documentTypeId.toString());
+  if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+  if (params?.offset !== undefined) searchParams.append('offset', params.offset.toString());
 
   const url = `${API_BASE_URL}/documents${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
@@ -38,7 +38,6 @@ export async function getDocuments(params?: {
     }
 
     const result = await response.json();
-    console.log('Documents API response:', result);
 
     errorCount = 0;
 

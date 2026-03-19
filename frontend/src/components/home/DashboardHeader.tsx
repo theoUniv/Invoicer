@@ -1,5 +1,6 @@
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { FileData, FileType } from '@/lib/types/documents';
+import { normalizeDateString } from '@/lib/utils/dateUtils';
 import { Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -35,7 +36,27 @@ const getFolderLabel = (type: FileType, t: any) => {
 
 const getMonthLabel = (month: string, t: any) => {
   const months = t('dashboard.folders.months');
-  return months[month] || month;
+
+  if (months && typeof months === 'object' && !Array.isArray(months)) {
+    return months[month] || month;
+  }
+
+  const monthMap: Record<string, string> = {
+    '01': 'Janvier',
+    '02': 'Février',
+    '03': 'Mars',
+    '04': 'Avril',
+    '05': 'Mai',
+    '06': 'Juin',
+    '07': 'Juillet',
+    '08': 'Août',
+    '09': 'Septembre',
+    '10': 'Octobre',
+    '11': 'Novembre',
+    '12': 'Décembre',
+  };
+
+  return monthMap[month] || month;
 };
 
 const searchFiles = (files: FileData[], searchTerm: string): FileData[] => {
@@ -67,12 +88,62 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const { t } = useAppTranslation();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending'>('all');
+  const [dateFilter, setDateFilter] = useState<'thisMonth' | 'lastMonth' | 'yearToDate'>('thisMonth');
+
+  const handleStatusFilterChange = (value: string) => {
+    const next = value as 'all' | 'paid' | 'pending';
+    setStatusFilter(next);
+    onStatusFilterChange?.(next);
+  };
+
+  const handleDateFilterChange = (value: string) => {
+    const next = value as 'thisMonth' | 'lastMonth' | 'yearToDate';
+    setDateFilter(next);
+    onDateFilterChange?.(next);
+  };
 
   useEffect(() => {
     const filteredFiles = searchFiles(files, searchTerm);
-    onFilteredFilesChange?.(filteredFiles);
+
+    const statusFilteredFiles = statusFilter === 'all'
+      ? filteredFiles
+      : filteredFiles.filter(file => {
+          const raw = (file.status ?? '').toLowerCase();
+
+          if (statusFilter === 'paid') {
+            return raw === 'paid' || raw === 'processed' || raw === 'completed';
+          }
+
+          return raw === 'pending' || raw === 'uploaded' || raw === 'processing';
+        });
+
+    const now = new Date();
+    const startOfNow = now.getTime();
+
+    const dateFilteredFiles = statusFilteredFiles.filter(file => {
+      const fileDate = normalizeDateString(file.date);
+      if (!fileDate) return false;
+
+      const fileTime = fileDate.getTime();
+
+      let startTime: number;
+      if (dateFilter === 'thisMonth' || dateFilter === 'lastMonth') {
+        const d = new Date(now);
+        d.setMonth(d.getMonth() - 1);
+        startTime = d.getTime();
+      } else {
+        const d = new Date(now);
+        d.setFullYear(d.getFullYear() - 1);
+        startTime = d.getTime();
+      }
+
+      return fileTime >= startTime && fileTime <= startOfNow;
+    });
+
+    onFilteredFilesChange?.(dateFilteredFiles);
     onSearchChange?.(searchTerm);
-  }, [searchTerm, files, onFilteredFilesChange, onSearchChange]);
+  }, [searchTerm, files, statusFilter, dateFilter, onFilteredFilesChange, onSearchChange]);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -167,19 +238,21 @@ export function DashboardHeader({
         </div>
         <select
           className="bg-transparent border-b border-[rgba(26,24,23,0.12)] py-2 text-sm text-[#1A1817] outline-none transition-colors focus:border-[#1A1817] w-30"
-          onChange={(e) => onStatusFilterChange?.(e.target.value)}
+          value={statusFilter}
+          onChange={(e) => handleStatusFilterChange(e.target.value)}
         >
-          <option>{t('dashboard.allStatus')}</option>
-          <option>{t('dashboard.paid')}</option>
-          <option>{t('dashboard.pending')}</option>
+          <option value="all">{t('dashboard.allStatus')}</option>
+          <option value="paid">{t('dashboard.paid')}</option>
+          <option value="pending">{t('dashboard.pending')}</option>
         </select>
         <select
           className="bg-transparent border-b border-[rgba(26,24,23,0.12)] py-2 text-sm text-[#1A1817] outline-none transition-colors focus:border-[#1A1817] w-30"
-          onChange={(e) => onDateFilterChange?.(e.target.value)}
+          value={dateFilter}
+          onChange={(e) => handleDateFilterChange(e.target.value)}
         >
-          <option>{t('dashboard.thisMonth')}</option>
-          <option>{t('dashboard.lastMonth')}</option>
-          <option>{t('dashboard.yearToDate')}</option>
+          <option value="thisMonth">{t('dashboard.thisMonth')}</option>
+          <option value="lastMonth">{t('dashboard.lastMonth')}</option>
+          <option value="yearToDate">{t('dashboard.yearToDate')}</option>
         </select>
       </div>
     </div>

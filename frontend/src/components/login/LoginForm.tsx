@@ -36,9 +36,7 @@ export function LoginForm() {
     if (result.success) {
       reset();
       setShowTooltip(true);
-      setTimeout(() => {
-        router.push('/home');
-      }, 2000);
+      router.push('/home');
     } else {
       addNotification({
         type: 'error',

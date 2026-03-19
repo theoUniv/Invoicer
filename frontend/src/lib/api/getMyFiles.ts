@@ -1,4 +1,4 @@
-import { getAuthCookie } from '../auth';
+import { getAuthCookie, removeAuthCookie } from '../auth';
 import { DocumentsResponse } from '../types/documents';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -15,9 +15,9 @@ export async function getMyFiles(params?: {
   const searchParams = new URLSearchParams();
 
   if (params?.status) searchParams.append('status', params.status);
-  if (params?.documentTypeId) searchParams.append('documentTypeId', params.documentTypeId.toString());
-  if (params?.limit) searchParams.append('limit', params.limit.toString());
-  if (params?.offset) searchParams.append('offset', params.offset.toString());
+  if (params?.documentTypeId !== undefined) searchParams.append('documentTypeId', params.documentTypeId.toString());
+  if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+  if (params?.offset !== undefined) searchParams.append('offset', params.offset.toString());
 
   const url = `${API_BASE_URL}/files/myfiles${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
@@ -38,6 +38,12 @@ export async function getMyFiles(params?: {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      if (response.status === 401) {
+        removeAuthCookie();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
