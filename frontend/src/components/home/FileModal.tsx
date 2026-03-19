@@ -4,7 +4,7 @@ import { createDocumentVersion } from '@/lib/services/filesService';
 import { DocumentVersion } from '@/lib/types/documentDetail';
 import { Document, FileData } from '@/lib/types/documents';
 import { formatDate } from '@/lib/utils/dateFormatter';
-import { ChevronDown, ChevronUp, Download, Edit2, Eye, History, Save, User, X, XCircle } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, Download, Edit2, Eye, History, Save, User, X, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface FileModalProps {
@@ -115,6 +115,25 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
     }
   };
 
+  const checkCoherence = (fields: Record<string, string>) => {
+    const parse = (v: string) => {
+      if (!v) return 0;
+      const num = parseFloat(v.replace(',', '.'));
+      return isNaN(num) ? 0 : num;
+    };
+    const ht = parse(fields['total_ht']);
+    const tva = parse(fields['total_tva']);
+    const ttc = parse(fields['total_ttc']);
+    
+    if (ht === 0 && tva === 0 && ttc === 0) return { ok: true };
+    const expectedTtc = Math.round((ht + tva) * 100) / 100;
+    const actualTtc = Math.round(ttc * 100) / 100;
+    const diff = Math.abs(expectedTtc - actualTtc);
+    return { ok: diff <= 0.05, expected: expectedTtc, actual: actualTtc };
+  };
+
+  const coherence = isEditing ? checkCoherence(editableFields) : { ok: true };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-[rgba(18,18,18,0.08)]">
@@ -207,6 +226,12 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                             ) : (
                               <><span className="text-[10px] text-[#6B6B66] font-medium">Traitement automatique</span></>
                             )}
+                            {version.fields.find(f => f.fieldName === 'is_total_incoherent' && f.fieldValue === 'True') && (
+                              <div className="flex items-center gap-1 text-red-600 ml-2 bg-red-50 px-1.5 py-0.5 rounded border border-red-100">
+                                <AlertTriangle className="w-3 h-3" />
+                                <span className="text-[9px] font-bold uppercase tracking-tight">Erreur TVA</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </button>
@@ -254,6 +279,10 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                                     onChange={(e) => setEditableFields(prev => ({...prev, [field.fieldName]: e.target.value}))}
                                     className={`text-[11px] font-medium text-[#121212] w-full bg-transparent outline-none focus:ring-1 focus:ring-amber-400 rounded px-1 -mx-1 py-0.5 transition-shadow ${
                                       isModified ? 'text-amber-900' : ''
+                                    } ${
+                                      isCurrentlyEditing && !coherence.ok && ['total_ht', 'total_tva', 'total_ttc'].includes(field.fieldName) 
+                                        ? 'text-red-600 bg-red-50' 
+                                        : ''
                                     }`}
                                     placeholder="—"
                                   />
@@ -266,6 +295,19 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                             );
                           })}
                         </div>
+                        
+                        {isCurrentlyEditing && !coherence.ok && (
+                          <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3 animate-in shake duration-500">
+                            <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5" />
+                            <div className="space-y-1">
+                              <p className="text-xs font-bold text-red-700">Incohérence des totaux</p>
+                              <p className="text-[10px] text-red-600 font-medium">
+                                Le calcul attendu est HT ({editableFields['total_ht'] || '0'}) + TVA ({editableFields['total_tva'] || '0'}) = <b>{coherence.expected?.toFixed(2)}</b>.
+                                Or, vous avez saisi <b>{coherence.actual?.toFixed(2)}</b>.
+                              </p>
+                            </div>
+                          </div>
+                        )}
                         
                         {isCurrentlyEditing && (
                           <div className="mt-4 pt-4 border-t border-[rgba(18,18,18,0.06)] flex items-center justify-end gap-2">
