@@ -112,5 +112,75 @@ router.get(
   }),
 );
 
+router.post(
+  "/:documentId/versions",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const prisma = getPrisma();
+    const documentId = Number(req.params.documentId);
+    if (!Number.isInteger(documentId)) {
+      return res.status(400).json({ error: { message: "Invalid documentId" } });
+    }
+
+    const { fields } = req.body;
+    if (!fields || !Array.isArray(fields)) {
+      return res.status(400).json({ error: { message: "Missing or invalid fields array" } });
+    }
+
+    // Check if doc exists
+    const doc = await prisma.document.findUnique({
+      where: { documentId },
+      include: { versions: true }
+    });
+
+    if (!doc) {
+      return res.status(404).json({ error: { message: "Document not found" } });
+    }
+
+    // Determine new version number
+    const maxVersion = doc.versions.length > 0 
+      ? Math.max(...doc.versions.map(v => v.versionNumber))
+      : 0;
+
+    // Create the new version
+    const newVersion = await prisma.documentVersion.create({
+      data: {
+        documentId,
+        versionNumber: maxVersion + 1,
+        processedBy: req.user.userId,
+      }
+    });
+
+    // Bulk create fields for this version
+    if (fields.length > 0) {
+      const fieldData = fields.map(f => ({
+        versionId: newVersion.versionId,
+        fieldName: f.fieldName,
+        fieldValue: f.fieldValue !== undefined ? String(f.fieldValue) : null,
+      }));
+
+      await prisma.documentField.createMany({
+        data: fieldData
+      });
+    }
+
+    // Fetch the fully populated new version to return
+    const populatedVersion = await prisma.documentVersion.findUnique({
+      where: { versionId: newVersion.versionId },
+      include: {
+        processor: { include: { role: true } },
+        fields: {
+          orderBy: { fieldId: "asc" },
+          include: {
+            validator: { include: { role: true } },
+          },
+        },
+      }
+    });
+
+    res.status(201).json({ data: populatedVersion });
+  }),
+);
+
 module.exports = { documentsRouter: router };
 
