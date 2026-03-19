@@ -1,14 +1,10 @@
-import { UploadArea } from '@/components/ui/UploadArea';
 import { EmptyState, Tooltip } from '@/components/ui';
+import { UploadArea } from '@/components/ui/UploadArea';
 import { useAppTranslation } from '@/hooks/useTranslation';
-import { ChevronRight, Folder, Upload } from 'lucide-react';
-import { FileData, FileType, uploadFile } from '@/lib/files';
-import { useState, useEffect } from 'react';
-
-interface UploadItem {
-  name: string;
-  status: 'processing' | 'done';
-}
+import { uploadFile } from '@/lib/api/uploadFile';
+import { FileData, FileType, UploadItem } from '@/lib/types/documents';
+import { ChevronRight, Folder } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface UploadPanelProps {
   uploads: UploadItem[];

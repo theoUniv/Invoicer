@@ -2,7 +2,7 @@ import { DataTable, DataTableHeader, DataTableRow, DataTableCell, DataTableHeade
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Button } from '@/components/ui';
 import { useAppTranslation } from '@/hooks/useTranslation';
-import { FileData } from '@/lib/files';
+import { FileData } from '@/lib/types/documents';
 import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
 import { useState } from 'react';
 import { FileModal } from './FileModal';

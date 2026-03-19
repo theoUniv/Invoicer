@@ -1,5 +1,5 @@
 import { X, Download, Trash2, Eye } from 'lucide-react';
-import { FileData } from '@/lib/files';
+import { FileData } from '@/lib/types/documents';
 import { useAppTranslation } from '@/hooks/useTranslation';
 
 interface FileModalProps {

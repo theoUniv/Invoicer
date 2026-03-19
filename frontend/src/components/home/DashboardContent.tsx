@@ -6,7 +6,7 @@ import { DashboardHeader } from './DashboardHeader';
 import { InvoiceTable } from './InvoiceTable';
 import { InvoiceFolders } from './InvoiceFolders';
 import { UploadPanel } from './UploadPanel';
-import { FileData, UploadItem, FileType } from '@/lib/files';
+import { FileData, UploadItem, FileType } from '@/lib/types/documents';
 
 interface DashboardContentProps {
   files: FileData[];
