@@ -83,9 +83,25 @@ services:
       - AIRFLOW_API_PASS=${AIRFLOW_ADMIN_PASSWORD:-admin}
     ports:
       - "3001:3001"
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
     depends_on:
       - db
       - minio
+    networks:
+      - invoicer-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
+    container_name: invoicer-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
     networks:
       - invoicer-network
 

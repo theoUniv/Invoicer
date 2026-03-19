@@ -10,7 +10,11 @@ const { errorHandler } = require("./middleware/errorHandler");
 function createApp() {
   const app = express();
   
-  app.use(cors());
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  app.use(cors({
+    origin: frontendUrl,
+    credentials: true
+  }));
   app.use(express.json({ limit: "10mb" }));
 
   app.get("/health", (req, res) => {
