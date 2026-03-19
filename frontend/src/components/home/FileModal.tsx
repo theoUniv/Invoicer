@@ -26,8 +26,29 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
     }
   };
 
-  const handleDownload = () => {
-    alert(t('dashboard.folders.downloadSimulated', { fileName: file.fileName }));
+  const handleDownload = async () => {
+    if (file.id !== '#000001' && file.id !== '#000002') {
+      try {
+        const response = await fetch(`http://72.60.37.180:3001/api/documents/${file.id.replace('#', '')}/raw-file`);
+        if (!response.ok) throw new Error('Download failed');
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.fileName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Download error:', error);
+        alert('Erreur lors du téléchargement');
+      }
+    } else {
+      alert('Document de démonstration - pas de fichier réel');
+    }
   };
 
   return (
@@ -98,13 +119,6 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
           >
             <Download className="w-4 h-4" />
             <span className="text-sm font-medium">{t('dashboard.folders.download')}</span>
-          </button>
-          <button
-            onClick={handleDelete}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-            <span className="text-sm font-medium">{t('dashboard.folders.delete')}</span>
           </button>
         </div>
       </div>

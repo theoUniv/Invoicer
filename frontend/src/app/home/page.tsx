@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 import { DashboardContent } from '@/components/home';
-import { getFilesData, addUploadItem, updateUploadStatus, Invoice, UploadItem, FileData } from '@/lib/files';
+import { addUploadItem, FileData, getFilesData, getMyFilesData, updateUploadStatus, UploadItem } from '@/lib/files';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
   const [files, setFiles] = useState<FileData[]>([]);
@@ -12,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await getFilesData();
+        const data = await getMyFilesData();
         setFiles(data.files);
         setUploads(data.uploads);
       } catch (error) {
@@ -28,7 +29,7 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const data = await getFilesData();
+        const data = await getMyFilesData();
         const processingIndex = data.uploads.findIndex(item => item.status === 'processing');
         
         if (processingIndex !== -1 && Math.random() > 0.7) {
@@ -45,16 +46,46 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleUploadStart = (item: UploadItem) => {
+    setUploads(prev => [...prev, item]);
+  };
+
+  const handleUploadFinish = (itemName: string) => {
+    setUploads(prev => 
+      prev.map(upload => 
+        upload.name === itemName 
+          ? { ...upload, status: 'done' as const }
+          : upload
+      )
+    );
+    
+    setTimeout(async () => {
+      try {
+        const data = await getMyFilesData();
+        setFiles(data.files);
+      } catch (error) {
+        console.error('Error reloading files:', error);
+      }
+    }, 1000);
+  };
+
+  const handleUploadComplete = () => {
+    setTimeout(() => {
+      setUploads(prev => prev.filter(upload => upload.status === 'processing'));
+    }, 3000);
+  };
+
   const handleFileSelect = async (file: File) => {
     try {
       await addUploadItem(file);
       
-      const data = await getFilesData();
+      const data = await getMyFilesData();
       setUploads(data.uploads);
       
       setTimeout(async () => {
-        const updatedData = await getFilesData();
+        const updatedData = await getMyFilesData();
         setUploads(updatedData.uploads);
+        setFiles(updatedData.files);
       }, 2000);
       
     } catch (error) {
@@ -62,50 +93,46 @@ export default function Home() {
     }
   };
 
-  const handleSearchChange = (value: string) => {
-    console.log('Search:', value);
-  };
-
-  const handleStatusFilterChange = (value: string) => {
-    console.log('Status filter:', value);
-  };
-
-  const handleDateFilterChange = (value: string) => {
-    console.log('Date filter:', value);
-  };
-
   const handleViewInvoice = (file: FileData) => {
-    console.log('View file:', file);
+    if (file.id !== '#000001' && file.id !== '#000002') {
+      window.open(`http://72.60.37.180:3001/api/documents/${file.id.replace('#', '')}/raw-file`, '_blank');
+    } else {
+      alert('Document de démonstration - pas de fichier réel');
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F4F1ED] pt-24 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A1817] mx-auto mb-4"></div>
-          <p className="text-[#8A8580]">Loading data...</p>
+      <AuthGuard requireAuth={true}>
+        <div className="min-h-screen bg-[#F4F1ED] pt-24 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A1817] mx-auto mb-4"></div>
+            <p className="text-[#8A8580]">Loading data...</p>
+          </div>
         </div>
-      </div>
+      </AuthGuard>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F1ED] pt-24" 
-         style={{
-           backgroundImage: 'radial-gradient(circle at 80% 90%, rgba(212, 197, 211, 1) 0%, transparent 50%), radial-gradient(circle at 10% 10%, rgba(220, 224, 228, 0.5) 0%, transparent 40%)',
-           backgroundAttachment: 'fixed'
-         }}>
-      
-      <DashboardContent
-        files={files}
-        uploads={uploads}
-        onFileSelect={handleFileSelect}
-        onSearchChange={handleSearchChange}
-        onStatusFilterChange={handleStatusFilterChange}
-        onDateFilterChange={handleDateFilterChange}
-        onViewInvoice={handleViewInvoice}
-      />
+    <AuthGuard requireAuth={true}>
+      <div className="min-h-screen bg-[#F4F1ED] pt-24" 
+           style={{
+             backgroundImage: 'radial-gradient(circle at 80% 90%, rgba(212, 197, 211, 1) 0%, transparent 50%), radial-gradient(circle at 10% 10%, rgba(220, 224, 228, 0.5) 0%, transparent 40%)',
+             backgroundAttachment: 'fixed'
+           }}>
+        
+        <DashboardContent
+          files={files}
+          uploads={uploads}
+          onFileSelect={handleFileSelect}
+          onViewInvoice={handleViewInvoice}
+          onUploadStart={handleUploadStart}
+          onUploadFinish={handleUploadFinish}
+          onUploadComplete={handleUploadComplete}
+        />
 
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

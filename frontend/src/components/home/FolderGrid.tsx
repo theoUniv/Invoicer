@@ -98,19 +98,28 @@ export function FolderGrid({
       {
         label: t('dashboard.folders.contextMenu.download'),
         icon: <Download className="w-4 h-4" />,
-        onClick: () => {
-          console.log('Télécharger:', file.fileName);
-          alert(t('dashboard.folders.downloadSimulated', { fileName: file.fileName }));
-        }
-      },
-      {
-        label: t('dashboard.folders.contextMenu.delete'),
-        icon: <Trash2 className="w-4 h-4" />,
-        danger: true,
-        onClick: () => {
-          if (window.confirm(t('dashboard.folders.confirmDelete', { fileName: file.fileName }))) {
-            console.log('Supprimer:', file.fileName);
-            alert(t('dashboard.folders.deleteSimulated', { fileName: file.fileName }));
+        onClick: async () => {
+          if (file.id !== '#000001' && file.id !== '#000002') {
+            try {
+              const response = await fetch(`http://72.60.37.180:3001/api/documents/${file.id.replace('#', '')}/raw-file`);
+              if (!response.ok) throw new Error('Download failed');
+              
+              const blob = await response.blob();
+              const url = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = file.fileName;
+              link.style.display = 'none';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              window.URL.revokeObjectURL(url);
+            } catch (error) {
+              console.error('Download error:', error);
+              alert('Erreur lors du téléchargement');
+            }
+          } else {
+            alert('Document de démonstration - pas de fichier réel');
           }
         }
       }
@@ -121,10 +130,6 @@ export function FolderGrid({
 
   const handleModalView = (file: FileData) => {
     onViewFile(file);
-  };
-
-  const handleModalDelete = (file: FileData) => {
-    console.log('Supprimer depuis modal:', file.fileName);
   };
 
   return (
@@ -190,7 +195,6 @@ export function FolderGrid({
             setSelectedFile(null);
           }}
           onView={handleModalView}
-          onDelete={handleModalDelete}
         />
       )}
     </div>

@@ -2,7 +2,7 @@ import { UploadArea } from '@/components/ui/UploadArea';
 import { EmptyState, Tooltip } from '@/components/ui';
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { ChevronRight, Folder, Upload } from 'lucide-react';
-import { FileData, FileType } from '@/lib/files';
+import { FileData, FileType, uploadFile } from '@/lib/files';
 import { useState, useEffect } from 'react';
 
 interface UploadItem {
@@ -14,6 +14,8 @@ interface UploadPanelProps {
   uploads: UploadItem[];
   onFileSelect: (file: File) => void;
   onUploadComplete?: () => void;
+  onUploadStart?: (item: UploadItem) => void;
+  onUploadFinish?: (itemName: string) => void;
   showTree?: boolean;
   files?: FileData[];
   onFolderSelect?: (folder: { type: FileType; year?: string; month?: string } | undefined) => void;
@@ -71,6 +73,8 @@ export function UploadPanel({
   uploads,
   onFileSelect,
   onUploadComplete,
+  onUploadStart,
+  onUploadFinish,
   showTree = false,
   files = [],
   onFolderSelect,
@@ -87,9 +91,25 @@ export function UploadPanel({
     setShowTooltip(true);
   };
 
-  const handleFileSelect = (file: File) => {
-    onFileSelect(file);
+  const handleFileSelect = async (file: File) => {
+    const uploadItem: UploadItem = {
+      name: file.name,
+      status: 'processing'
+    };
+    
+    onUploadStart?.(uploadItem);
     showTooltipMessage('tooltip.invoiceAdded');
+    
+    const result = await uploadFile(file);
+    
+    if (result.success) {
+      onUploadFinish?.(file.name);
+      showTooltipMessage('tooltip.uploadComplete');
+      onUploadComplete?.();
+    } else {
+      console.error('Upload failed:', result.error);
+      showTooltipMessage('tooltip.uploadError');
+    }
   };
 
   const handleUploadComplete = () => {
