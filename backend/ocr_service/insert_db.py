@@ -19,6 +19,22 @@ connection = mysql.connector.connect(
 
 cursor = connection.cursor()
 
+def get_or_create_document_type(name):
+    if not name:
+        name = "facture"
+    
+    query = "SELECT document_type_id FROM document_types WHERE name = %s"
+    cursor.execute(query, (name.lower(),))
+    result = cursor.fetchone()
+
+    if result:
+        return result[0]
+
+    insert_query = "INSERT INTO document_types (name) VALUES (%s)"
+    cursor.execute(insert_query, (name.lower(),))
+    connection.commit()
+    return cursor.lastrowid
+
 def get_or_create_company(supplier):
     if not supplier or not supplier.get("siret"):
         return None
@@ -63,8 +79,16 @@ def update_document(document_id, json_data, fallback_name):
     """
     # Use fallback if invoice_number is None or empty
     invoice_number = json_data.get("invoice_number") or fallback_name
+    doc_type = json_data.get("type", "facture")
+    doc_type_id = get_or_create_document_type(doc_type)
+
     storage_path = f"gold/invoices/{invoice_number}.json"
     cursor.execute(query, (invoice_number, storage_path, document_id))
+    
+    # Also update type if needed
+    type_query = "UPDATE documents SET document_type_id = %s WHERE document_id = %s"
+    cursor.execute(type_query, (doc_type_id, document_id))
+    
     connection.commit()
 
 def insert_document(json_data, fallback_name):
@@ -74,8 +98,11 @@ def insert_document(json_data, fallback_name):
     """
     # Use fallback if invoice_number is None or empty
     invoice_number = json_data.get("invoice_number") or fallback_name
+    doc_type = json_data.get("type", "facture")
+    doc_type_id = get_or_create_document_type(doc_type)
+
     values = (
-        1,
+        doc_type_id,
         invoice_number,
         f"gold/invoices/{invoice_number}.json"
     )
