@@ -145,6 +145,7 @@ def main():
 
     json_name = args.json_name
     document_id = args.document_id
+    print(f"DEBUG: insert_db.py received raw document_id='{document_id}'")
     
     # Handle Airflow passing "None" as a string if XCom is empty
     if document_id == "None" or document_id == "":

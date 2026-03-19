@@ -22,6 +22,8 @@ def extract_filename(**context):
     
     filename = os.path.basename(full_path)
     document_id = context['dag_run'].conf.get('document_id')
+    print(f"DEBUG: DAG Conf = {context['dag_run'].conf}")
+    print(f"DEBUG: Extracting filename={filename}, document_id={document_id}")
     
     # Push to xcom for next tasks
     context['ti'].xcom_push(key='filename', value=filename)

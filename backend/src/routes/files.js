@@ -171,6 +171,7 @@ router.post(
       await fs.writeFile(localPath, f.buffer);
 
       const airflowPath = `/opt/airflow/backend/temp_uploads/${baseName}${ext}`;
+      console.log(`DEBUG: Triggering Airflow for doc_id=${doc.documentId}, path=${airflowPath}`);
       try {
         await triggerOcrPipeline(airflowPath, doc.documentId);
       } catch (err) {
