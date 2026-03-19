@@ -1,5 +1,5 @@
 import { useContextMenu } from '@/components/ui/ContextMenu';
-import { FileData, FileType } from '@/lib/files';
+import { FileData, FileType } from '@/lib/types/documents';
 import { Download, Eye, File, FileText, FolderOpen, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useAppTranslation } from '@/hooks/useTranslation';

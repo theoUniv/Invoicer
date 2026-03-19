@@ -7,7 +7,7 @@ import { InvoiceTable } from './InvoiceTable';
 import { InvoiceFolders } from './InvoiceFolders';
 import { KpiCards } from './KpiCards';
 import { FolderTree } from './FolderTree';
-import { FileData, FileType } from '@/lib/files';
+import { FileData, FileType } from '@/lib/types/documents';
 import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
 
 interface OverviewContentProps {
