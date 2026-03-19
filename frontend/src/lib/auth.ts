@@ -38,7 +38,7 @@ export interface ApiError {
   };
 }
 
-const API_BASE_URL = 'http://72.60.37.180:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 let lastErrorTime = 0;
 let errorCount = 0;
