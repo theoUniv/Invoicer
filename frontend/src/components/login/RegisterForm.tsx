@@ -6,12 +6,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Input, Tooltip } from '@/components/ui';
 import { useAppTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/hooks/useAuth';
 import { registerSchema, RegisterFormData } from '@/validators/auth';
+import { addNotification } from '@/lib/notifications';
 
 export function RegisterForm() {
   const [showTooltip, setShowTooltip] = useState(false);
   const router = useRouter();
   const { t } = useAppTranslation();
+  const { register: registerUser, isLoading } = useAuth();
 
   const {
     register,
@@ -29,12 +32,30 @@ export function RegisterForm() {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
-    console.log('Register data:', data);
-    setShowTooltip(true);
-    reset();
-    setTimeout(() => {
-      router.push('/login');
-    }, 2000);
+    const nameParts = data.name.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    const result = await registerUser({
+      email: data.email,
+      password: data.password,
+      firstName,
+      lastName
+    });
+    
+    if (result.success) {
+      setShowTooltip(true);
+      reset();
+      setTimeout(() => {
+        router.push('/home');
+      }, 2000);
+    } else {
+      addNotification({
+        type: 'error',
+        message: result.error || 'Erreur lors de l\'inscription',
+        duration: 5000
+      });
+    }
   };
 
   useEffect(() => {
@@ -93,8 +114,8 @@ export function RegisterForm() {
             <a href="/login" className="text-[#8A8580] no-underline text-sm">
               {t('login.alreadyHaveAccount')}
             </a>
-            <Button variant="dark" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Création...' : t('register.createAccount')}
+            <Button variant="dark" type="submit" disabled={isSubmitting || isLoading}>
+              {isSubmitting || isLoading ? 'Création...' : t('register.createAccount')}
             </Button>
           </div>
         </form>

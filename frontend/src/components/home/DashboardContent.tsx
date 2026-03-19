@@ -1,7 +1,7 @@
 'use client';
 
 import { ViewToggle } from '@/components/ui';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DashboardHeader } from './DashboardHeader';
 import { InvoiceTable } from './InvoiceTable';
 import { InvoiceFolders } from './InvoiceFolders';
@@ -16,6 +16,9 @@ interface DashboardContentProps {
   onStatusFilterChange?: (value: string) => void;
   onDateFilterChange?: (value: string) => void;
   onViewInvoice?: (file: FileData) => void;
+  onUploadStart?: (item: UploadItem) => void;
+  onUploadFinish?: (itemName: string) => void;
+  onUploadComplete?: () => void;
 }
 
 export function DashboardContent({
@@ -25,7 +28,10 @@ export function DashboardContent({
   onSearchChange,
   onStatusFilterChange,
   onDateFilterChange,
-  onViewInvoice
+  onViewInvoice,
+  onUploadStart,
+  onUploadFinish,
+  onUploadComplete
 }: DashboardContentProps) {
   const [activeView, setActiveView] = useState<'list' | 'folders'>('list');
   const [currentFolder, setCurrentFolder] = useState<{
@@ -53,9 +59,9 @@ export function DashboardContent({
     }
   };
 
-  const handleFilteredFilesChange = (newFilteredFiles: FileData[]) => {
+  const handleFilteredFilesChange = useCallback((newFilteredFiles: FileData[]) => {
     setFilteredFiles(newFilteredFiles);
-  };
+  }, []);
 
   const getFilteredFiles = () => {
     if (!currentFolder) {
@@ -120,6 +126,9 @@ export function DashboardContent({
       <UploadPanel
         uploads={uploads}
         onFileSelect={onFileSelect}
+        onUploadComplete={onUploadComplete}
+        onUploadStart={onUploadStart}
+        onUploadFinish={onUploadFinish}
         showTree={activeView === 'folders'}
         files={filteredFiles}
         onFolderSelect={handleFolderSelect}
@@ -147,18 +156,30 @@ export function DashboardContent({
         </div>
 
         {activeView === 'list' ? (
-          <InvoiceTable 
-            files={filteredFiles}
-            onViewInvoice={onViewInvoice}
-          />
+          filteredFiles.length === 0 ? (
+            <div className="flex items-center text-sm justify-center h-12 text-black">
+              <p>Aucun fichier pour le moment</p>
+            </div>
+          ) : (
+            <InvoiceTable 
+              files={filteredFiles}
+              onViewInvoice={onViewInvoice}
+            />
+          )
         ) : (
-          <InvoiceFolders 
-            files={getFilteredFiles()}
-            subFolders={getSubFolders()}
-            currentFolder={currentFolder}
-            onFolderSelect={handleFolderSelect}
-            onViewInvoice={onViewInvoice}
-          />
+          getFilteredFiles().length === 0 ? (
+            <div className="flex items-center text-sm justify-center h-12 text-black">
+              <p>Aucun fichier pour le moment</p>
+            </div>
+          ) : (
+            <InvoiceFolders 
+              files={getFilteredFiles()}
+              subFolders={getSubFolders()}
+              currentFolder={currentFolder}
+              onFolderSelect={handleFolderSelect}
+              onViewInvoice={onViewInvoice}
+            />
+          )
         )}
       </section>
     </main>

@@ -76,16 +76,12 @@
       "fileAmount": "Montant",
       "fileStatus": "Statut",
       "download": "Télécharger",
-      "delete": "Supprimer",
       "view": "Voir",
       "contextMenu": {
         "view": "Voir",
-        "download": "Télécharger",
-        "delete": "Supprimer"
+        "download": "Télécharger"
       },
-      "confirmDelete": "Êtes-vous sûr de vouloir supprimer \"{fileName}\" ?",
       "downloadSimulated": "Téléchargement de {fileName} simulé",
-      "deleteSimulated": "Suppression de {fileName} simulée",
       "descriptions": {
         "monthFiles": "Fichiers du mois",
         "yearFiles": "Fichiers de l'année",

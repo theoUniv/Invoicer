@@ -76,16 +76,12 @@
       "fileAmount": "Amount",
       "fileStatus": "Status",
       "download": "Download",
-      "delete": "Delete",
       "view": "View",
       "contextMenu": {
         "view": "View",
-        "download": "Download",
-        "delete": "Delete"
+        "download": "Download"
       },
-      "confirmDelete": "Are you sure you want to delete \"{fileName}\"?",
       "downloadSimulated": "Download of {fileName} simulated",
-      "deleteSimulated": "Deletion of {fileName} simulated",
       "descriptions": {
         "monthFiles": "Files of the month",
         "yearFiles": "Files of the year",

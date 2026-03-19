@@ -1,4 +1,4 @@
-import { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 
 const s3Client = new S3Client({
@@ -28,26 +28,6 @@ export class MinIOService {
       MinIOService.instance = new MinIOService();
     }
     return MinIOService.instance;
-  }
-
-  async uploadFile(bucket: string, key: string, file: File): Promise<boolean> {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      
-      const command = new PutObjectCommand({
-        Bucket: bucket,
-        Key: key,
-        Body: new Uint8Array(arrayBuffer),
-        ContentType: file.type,
-        ContentLength: file.size,
-      });
-
-      await s3Client.send(command);
-      return true;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      return false;
-    }
   }
 
   async getRawById(filename: string): Promise<any> {

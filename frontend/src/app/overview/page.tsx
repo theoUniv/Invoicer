@@ -2,19 +2,50 @@
 
 import { useState, useEffect } from 'react';
 import { OverviewContent } from '@/components/home';
-import { getFilesData, FileData } from '@/lib/files';
+import { getFilesData, getInvoiceDetail } from '@/lib/services/filesService';
+import { FileData } from '@/lib/types/documents';
+import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 export default function Overview() {
   const [files, setFiles] = useState<FileData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [extractedData, setExtractedData] = useState<Map<number, ExtractedInvoiceData>>(new Map());
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const data = await getFilesData();
         setFiles(data.files);
+        
+        const processedFiles = data.files.filter(file => 
+          file.status === 'paid'
+        );
+        
+        const extractedPromises = processedFiles.map(async (file) => {
+          const documentId = parseInt(file.id.replace('#', ''));
+          try {
+            const detail = await getInvoiceDetail(documentId);
+            return { documentId, detail };
+          } catch (error) {
+            console.error(`Error fetching detail for document ${documentId}:`, error);
+            return { documentId, detail: null };
+          }
+        });
+        
+        const results = await Promise.all(extractedPromises);
+        const newExtractedData = new Map<number, ExtractedInvoiceData>();
+        
+        results.forEach(({ documentId, detail }) => {
+          if (detail) {
+            newExtractedData.set(documentId, detail);
+          }
+        });
+        
+        setExtractedData(newExtractedData);
       } catch (error) {
         console.error('Error loading data:', error);
+        setFiles([]);
       } finally {
         setLoading(false);
       }
@@ -36,35 +67,45 @@ export default function Overview() {
   };
 
   const handleViewInvoice = (file: FileData) => {
-    console.log('View file:', file);
+    window.open(`http://72.60.37.180:3001/api/documents/${file.id.replace('#', '')}/raw-file`, '_blank');
+  };
+
+  const getExtractedDataForFile = (file: FileData): ExtractedInvoiceData | null => {
+    const documentId = parseInt(file.id.replace('#', ''));
+    return extractedData.get(documentId) || null;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F4F1ED] pt-24 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A1817] mx-auto mb-4"></div>
-          <p className="text-[#8A8580]">Chargement des données...</p>
+      <AuthGuard requireAuth={true}>
+        <div className="min-h-screen bg-[#F4F1ED] pt-24 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A1817] mx-auto mb-4"></div>
+            <p className="text-[#8A8580]">Chargement des données...</p>
+          </div>
         </div>
-      </div>
+      </AuthGuard>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F1ED] pt-24" 
-         style={{
-           backgroundImage: 'radial-gradient(circle at 80% 90%, rgba(212, 197, 211, 1) 0%, transparent 50%), radial-gradient(circle at 10% 10%, rgba(220, 224, 228, 0.5) 0%, transparent 40%)',
-           backgroundAttachment: 'fixed'
-         }}>
-      
-      <OverviewContent
-        files={files}
-        onSearchChange={handleSearchChange}
-        onStatusFilterChange={handleStatusFilterChange}
-        onDateFilterChange={handleDateFilterChange}
-        onViewInvoice={handleViewInvoice}
-      />
+    <AuthGuard requireAuth={true}>
+      <div className="min-h-screen bg-[#F4F1ED] pt-24" 
+           style={{
+             backgroundImage: 'radial-gradient(circle at 80% 90%, rgba(212, 197, 211, 1) 0%, transparent 50%), radial-gradient(circle at 10% 10%, rgba(220, 224, 228, 0.5) 0%, transparent 40%)',
+             backgroundAttachment: 'fixed'
+           }}>
+        
+        <OverviewContent
+          files={files}
+          onSearchChange={handleSearchChange}
+          onStatusFilterChange={handleStatusFilterChange}
+          onDateFilterChange={handleDateFilterChange}
+          onViewInvoice={handleViewInvoice}
+          getExtractedData={getExtractedDataForFile}
+        />
 
-    </div>
+      </div>
+    </AuthGuard>
   );
 }
