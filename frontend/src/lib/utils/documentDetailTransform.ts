@@ -1,4 +1,5 @@
 import { DocumentDetail, DocumentField } from '../types/documentDetail';
+import { formatDateWithoutHook } from './dateFormatter';
 
 export interface ExtractedInvoiceData {
   invoiceNumber: string;
@@ -13,7 +14,7 @@ export interface ExtractedInvoiceData {
   status: string;
 }
 
-export function extractInvoiceData(document: DocumentDetail): ExtractedInvoiceData | null {
+export function extractInvoiceData(document: DocumentDetail, translations?: any, language: string = 'fr'): ExtractedInvoiceData | null {
   if (!document.versions.length || !document.versions[0].fields.length) {
     return null;
   }
@@ -25,9 +26,12 @@ export function extractInvoiceData(document: DocumentDetail): ExtractedInvoiceDa
     fieldMap.set(field.fieldName, field.fieldValue);
   });
   
+  const rawIssueDate = fieldMap.get('issue_date') || '';
+  const formattedIssueDate = translations && rawIssueDate ? formatDateWithoutHook(rawIssueDate, translations, language) : rawIssueDate;
+  
   return {
     invoiceNumber: fieldMap.get('invoice_number') || '',
-    issueDate: fieldMap.get('issue_date') || '',
+    issueDate: formattedIssueDate,
     siret: fieldMap.get('siret') || '',
     tva: fieldMap.get('tva') || '',
     totalTtc: fieldMap.get('total_ttc') || '',

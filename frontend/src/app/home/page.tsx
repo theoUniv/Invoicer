@@ -7,12 +7,14 @@ import { documentToFileData } from '@/lib/utils/documentTransform';
 import { extractInvoiceData } from '@/lib/utils/documentDetailTransform';
 import { FileData, UploadItem } from '@/lib/types/documents';
 import { useEffect, useState } from 'react';
+import { useAppTranslation } from '@/hooks/useTranslation';
 
 export default function Home() {
   const [files, setFiles] = useState<FileData[]>([]);
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [extractedData, setExtractedData] = useState<Map<number, any>>(new Map());
+  const { translations, currentLanguage } = useAppTranslation();
 
   useEffect(() => {
     const loadData = async () => {
@@ -23,14 +25,14 @@ export default function Home() {
         setUploads([]);
         
         const processedFiles = files.filter(file => 
-          file.status === 'paid' && file.id !== '#000001' && file.id !== '#000002'
+          file.status === 'processed' && file.id !== '#000001' && file.id !== '#000002'
         );
         
         const extractedPromises = processedFiles.map(async (file) => {
           const documentId = parseInt(file.id.replace('#', ''));
           try {
-            const detail = await getDocumentDetail(documentId);
-            const extracted = extractInvoiceData(detail.data);
+            const detail = await getDocumentDetail(documentId, translations, currentLanguage);
+            const extracted = extractInvoiceData(detail.data, translations, currentLanguage);
             return { documentId, detail: extracted };
           } catch (error) {
             console.error(`Error fetching detail for document ${documentId}:`, error);
@@ -55,7 +57,7 @@ export default function Home() {
     };
 
     loadData();
-  }, []);
+  }, [translations, currentLanguage]);
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -68,7 +70,7 @@ export default function Home() {
           setFiles(files);
           
           const newProcessedFiles = files.filter(file => 
-            file.status === 'paid' && 
+            file.status === 'processed' && 
             file.id !== '#000001' && 
             file.id !== '#000002' &&
             !extractedData.has(parseInt(file.id.replace('#', '')))
@@ -78,8 +80,8 @@ export default function Home() {
             const extractedPromises = newProcessedFiles.map(async (file) => {
               const documentId = parseInt(file.id.replace('#', ''));
               try {
-                const detail = await getDocumentDetail(documentId);
-                const extracted = extractInvoiceData(detail.data);
+                const detail = await getDocumentDetail(documentId, translations, currentLanguage);
+                const extracted = extractInvoiceData(detail.data, translations, currentLanguage);
                 return { documentId, detail: extracted };
               } catch (error) {
                 console.error(`Error fetching detail for document ${documentId}:`, error);
@@ -211,19 +213,6 @@ export default function Home() {
     }
   };
 
-  if (loading) {
-    return (
-      <AuthGuard requireAuth={true}>
-        <div className="min-h-screen bg-[#F4F1ED] pt-24 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A1817] mx-auto mb-4"></div>
-            <p className="text-[#8A8580]">Loading data...</p>
-          </div>
-        </div>
-      </AuthGuard>
-    );
-  }
-
   return (
     <AuthGuard requireAuth={true}>
       <div className="min-h-screen bg-[#F4F1ED] pt-24" 
@@ -241,6 +230,7 @@ export default function Home() {
           onUploadFinish={handleUploadFinish}
           onUploadComplete={handleUploadComplete}
           getExtractedData={getExtractedDataForFile}
+          isLoading={loading}
         />
 
       </div>

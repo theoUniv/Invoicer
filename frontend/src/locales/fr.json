@@ -43,7 +43,7 @@
     "signOut": "Se déconnecter",
     "searchPlaceholder": "Rechercher fournisseur ou ID...",
     "allStatus": "Tous les statuts",
-    "paid": "Payé",
+    "processed": "Traité",
     "pending": "En attente",
     "thisMonth": "Ce mois",
     "lastMonth": "Le mois dernier",
@@ -108,7 +108,7 @@
       "totalDocuments": "Total des documents",
       "totalCompanies": "Entreprises uniques",
       "totalAmount": "Montant total",
-      "paidInvoices": "Factures payées",
+      "processedInvoices": "Factures Traitées",
       "pendingInvoices": "En attente",
       "documents": "documents",
       "companies": "entreprises",
@@ -169,7 +169,7 @@
       "amount": "Montant",
       "status": "Statut",
       "extracted": "Extrait",
-      "paid": "Payé",
+      "processed": "Traité",
       "processing": "En cours",
       "data": {
         "stripe": {

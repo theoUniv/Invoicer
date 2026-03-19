@@ -3,6 +3,7 @@ import { getDocument } from '@/lib/api';
 import { createDocumentVersion } from '@/lib/services/filesService';
 import { DocumentVersion } from '@/lib/types/documentDetail';
 import { Document, FileData } from '@/lib/types/documents';
+import { formatDate } from '@/lib/utils/dateFormatter';
 import { ChevronDown, ChevronUp, Download, Edit2, Eye, History, Save, User, X, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -14,12 +15,11 @@ interface FileModalProps {
 }
 
 export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
-  const { t } = useAppTranslation();
+  const { t, i18n } = useAppTranslation();
   const [fullDoc, setFullDoc] = useState<Document | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandedVersion, setExpandedVersion] = useState<number | null>(null);
   
-  // Edit state
   const [isEditing, setIsEditing] = useState(false);
   const [editableFields, setEditableFields] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -85,7 +85,7 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
     });
     setEditableFields(fieldsMap);
     setIsEditing(true);
-    setExpandedVersion(0); // Force open the latest version being edited
+    setExpandedVersion(0);
   };
 
   const handleCancelEdit = () => {
@@ -106,7 +106,6 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
       setIsEditing(false);
       setEditableFields({});
       
-      // Refresh the document to show the new version
       await fetchDoc(fullDoc.documentId);
     } catch (err) {
       console.error('Failed to save new version', err);
@@ -152,14 +151,14 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
             <div className="space-y-4">
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-bold text-[#6B6B66] tracking-widest mb-1">{t('dashboard.folders.fileDate')}</span>
-                <span className="text-sm font-semibold text-[#121212]">{file.date}</span>
+                <span className="text-sm font-semibold text-[#121212]">{formatDate(file.date, t, i18n)}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-bold text-[#6B6B66] tracking-widest mb-1">{t('dashboard.folders.fileStatus')}</span>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                  file.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                  file.status === 'processed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
                 }`}>
-                  {file.status === 'paid' ? t('dashboard.paid') : t('dashboard.pending')}
+                  {file.status === 'processed' ? t('dashboard.processed') : t('dashboard.pending')}
                 </span>
               </div>
             </div>
@@ -200,10 +199,7 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-[#121212]">
-                            {new Date(version.extractedAt).toLocaleString('fr-FR', {
-                              day: 'numeric', month: 'short', year: 'numeric',
-                              hour: '2-digit', minute: '2-digit'
-                            })}
+                            {formatDate(version.extractedAt, t, i18n)}
                           </p>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             {version.processor ? (

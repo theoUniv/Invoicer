@@ -3,11 +3,7 @@ import { Document, FileData, FileType } from '../types/documents';
 export function documentToFileData(doc: Document): FileData {
   const vendor = doc.companyLinks && doc.companyLinks.length > 0 ? doc.companyLinks[0].company.name : 'Unknown Vendor';
   
-  const date = new Date(doc.uploadedAt).toLocaleDateString('fr-FR', { 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric' 
-  });
+  const date = doc.uploadedAt;
   
   const mapDocumentType = (docTypeName: string): FileType => {
     switch (docTypeName.toLowerCase()) {
@@ -17,9 +13,8 @@ export function documentToFileData(doc: Document): FileData {
       case 'contract':
       case 'contrat':
         return 'contract';
-      case 'quote':
       case 'devis':
-        return 'quote';
+        return 'devis';
       case 'expense':
       case 'dépense':
         return 'expense';
@@ -32,7 +27,7 @@ export function documentToFileData(doc: Document): FileData {
     switch (status.toLowerCase()) {
       case 'processed':
       case 'completed':
-        return 'paid';
+        return 'processed';
       case 'uploaded':
       case 'processing':
       case 'pending':

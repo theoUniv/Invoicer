@@ -1,17 +1,21 @@
 'use client';
 
 import { ViewToggle } from '@/components/ui';
-import { useState } from 'react';
-import { DashboardHeader } from './DashboardHeader';
-import { InvoiceTable } from './InvoiceTable';
-import { InvoiceFolders } from './InvoiceFolders';
-import { KpiCards } from './KpiCards';
-import { FolderTree } from './FolderTree';
+import { useCallback, useRef } from 'react';
 import { FileData, FileType } from '@/lib/types/documents';
+import { getMonthsForTypeAndYear, getTypesFromGroups, getYearsForType, groupFilesByHierarchy, normalizeDateString } from '@/lib/utils/dateUtils';
 import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
+import { updateFileDatesWithExtractedData } from '@/lib/utils/fileDateUpdater';
+import { useEffect, useState } from 'react';
+import { DashboardHeader } from './DashboardHeader';
+import { FolderTree } from './FolderTree';
+import { InvoiceFolders } from './InvoiceFolders';
+import { InvoiceTable } from './InvoiceTable';
+import { KpiCards } from './KpiCards';
 
 interface OverviewContentProps {
   files: FileData[];
+  isLoading?: boolean;
   onSearchChange?: (value: string) => void;
   onStatusFilterChange?: (value: string) => void;
   onDateFilterChange?: (value: string) => void;
@@ -21,6 +25,7 @@ interface OverviewContentProps {
 
 export function OverviewContent({
   files,
+  isLoading = false,
   onSearchChange,
   onStatusFilterChange,
   onDateFilterChange,
@@ -33,6 +38,37 @@ export function OverviewContent({
     year?: string;
     month?: string;
   } | undefined>(undefined);
+
+  const [updatedFiles, setUpdatedFiles] = useState<FileData[]>(files);
+  const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
+  const statusFilterRef = useRef<'all' | 'processed' | 'pending'>('all');
+
+  useEffect(() => {
+    setFilteredFiles(updatedFiles);
+  }, [updatedFiles]);
+
+  useEffect(() => {
+    if (getExtractedData) {
+      const extractedDataMap = new Map<number, ExtractedInvoiceData>();
+
+      files.forEach((file) => {
+        const extracted = getExtractedData(file);
+        if (extracted) {
+          const documentId = parseInt(file.id.replace('#', ''));
+          extractedDataMap.set(documentId, extracted);
+        }
+      });
+
+      if (extractedDataMap.size > 0) {
+        const filesWithCorrectDates = updateFileDatesWithExtractedData(files, extractedDataMap);
+        setUpdatedFiles(filesWithCorrectDates);
+      } else {
+        setUpdatedFiles(files);
+      }
+    } else {
+      setUpdatedFiles(files);
+    }
+  }, [files, getExtractedData]);
 
   const handleFolderSelect = (folder: { type: FileType; year?: string; month?: string } | undefined) => {
     setCurrentFolder(folder);
@@ -48,21 +84,44 @@ export function OverviewContent({
     }
   };
 
+  const mapStatusFilterValue = (value: string): 'all' | 'processed' | 'pending' => {
+    const v = (value ?? '').toLowerCase();
+
+    if (v === 'all') return 'all';
+    if (v === 'processed') return 'processed';
+    if (v === 'pending') return 'pending';
+
+    if (v.includes('pending') || v.includes('en attente') || v.includes('en attente'.toLowerCase())) return 'pending';
+    if (v.includes('processed') || v.includes('pay')) return 'processed';
+
+    return 'all';
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    const next = mapStatusFilterValue(value);
+    statusFilterRef.current = next;
+    onStatusFilterChange?.(value);
+  };
+
   const getFilteredFiles = () => {
     if (!currentFolder) {
-      return files;
+      return filteredFiles;
     }
 
-    return files.filter(file => {
+    return filteredFiles.filter(file => {
       if (file.type !== currentFolder.type) return false;
 
       if (currentFolder.year) {
-        const fileYear = new Date(file.date).getFullYear().toString();
+        const fileDate = normalizeDateString(file.date);
+        if (!fileDate) return false;
+        const fileYear = fileDate.getFullYear().toString();
         if (fileYear !== currentFolder.year) return false;
       }
 
       if (currentFolder.month) {
-        const fileMonth = (new Date(file.date).getMonth() + 1).toString().padStart(2, '0');
+        const fileDate = normalizeDateString(file.date);
+        if (!fileDate) return false;
+        const fileMonth = (fileDate.getMonth() + 1).toString().padStart(2, '0');
         if (fileMonth !== currentFolder.month) return false;
       }
 
@@ -70,36 +129,43 @@ export function OverviewContent({
     });
   };
 
+  const handleFilteredFilesChange = useCallback((newFilteredFiles: FileData[]) => {
+    const statusFilter = statusFilterRef.current;
+
+    if (statusFilter === 'all') {
+      setFilteredFiles(newFilteredFiles);
+      return;
+    }
+
+    const statusFilteredFiles = newFilteredFiles.filter(file => {
+      const raw = (file.status ?? '').toLowerCase();
+
+      if (statusFilter === 'processed') {
+        return raw === 'processed' || raw === 'completed';
+      }
+
+      return raw === 'pending' || raw === 'uploaded' || raw === 'processing';
+    });
+
+    setFilteredFiles(statusFilteredFiles);
+  }, []);
+
   const getSubFolders = () => {
+    const fileGroups = groupFilesByHierarchy(updatedFiles);
+    
     if (!currentFolder) {
-      const types = new Set<FileType>();
-      files.forEach(file => types.add(file.type));
-      return Array.from(types).map(type => ({ type }));
+      const types = getTypesFromGroups(fileGroups);
+      return types.map(type => ({ type }));
     }
 
     if (currentFolder.type && !currentFolder.year) {
-      const years = new Set<string>();
-      files.forEach(file => {
-        if (file.type === currentFolder.type) {
-          years.add(new Date(file.date).getFullYear().toString());
-        }
-      });
-      return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a))
-        .map(year => ({ type: currentFolder.type, year }));
+      const years = getYearsForType(fileGroups, currentFolder.type);
+      return years.map(year => ({ type: currentFolder.type, year }));
     }
 
     if (currentFolder.type && currentFolder.year && !currentFolder.month) {
-      const months = new Set<string>();
-      files.forEach(file => {
-        if (file.type === currentFolder.type) {
-          const fileYear = new Date(file.date).getFullYear().toString();
-          if (fileYear === currentFolder.year) {
-            months.add((new Date(file.date).getMonth() + 1).toString().padStart(2, '0'));
-          }
-        }
-      });
-      return Array.from(months).sort((a, b) => parseInt(a) - parseInt(b))
-        .map(month => ({ type: currentFolder.type, year: currentFolder.year, month }));
+      const months = getMonthsForTypeAndYear(fileGroups, currentFolder.type, currentFolder.year);
+      return months.map(month => ({ type: currentFolder.type, year: currentFolder.year, month }));
     }
 
     return [];
@@ -108,15 +174,17 @@ export function OverviewContent({
   return (
     <main className="flex flex-1 px-12 py-12 gap-16 max-w-[1600px] mx-auto w-full">
       <section className="flex-1 flex flex-col">
-        <KpiCards files={files} />
+        <KpiCards files={files} getExtractedData={getExtractedData} isLoading={isLoading} />
 
         <DashboardHeader
           onSearchChange={onSearchChange}
-          onStatusFilterChange={onStatusFilterChange}
+          onStatusFilterChange={handleStatusFilterChange}
           onDateFilterChange={onDateFilterChange}
           activeView={activeView}
           currentFolder={currentFolder}
           onBreadcrumbClick={handleBreadcrumbClick}
+          files={updatedFiles}
+          onFilteredFilesChange={handleFilteredFilesChange}
         />
 
         <div className={`flex justify-end mb-4 ${activeView === 'folders' ? '-mt-14' : ''}`}>
@@ -129,13 +197,14 @@ export function OverviewContent({
         {activeView === 'list' ? (
           <InvoiceTable
             files={getFilteredFiles()}
+            isLoading={isLoading}
             onViewInvoice={onViewInvoice}
             getExtractedData={getExtractedData}
           />
         ) : (
           <div className="flex">
             <FolderTree
-              files={files}
+              files={filteredFiles}
               onFolderSelect={handleFolderSelect}
               currentFolder={currentFolder}
             />

@@ -6,13 +6,17 @@ import { DashboardHeader } from './DashboardHeader';
 import { InvoiceTable } from './InvoiceTable';
 import { InvoiceFolders } from './InvoiceFolders';
 import { UploadPanel } from './UploadPanel';
-import { FileData, UploadItem, FileType } from '@/lib/types/documents';
+import { useAppTranslation } from '@/hooks/useTranslation';
+import { FileData, FileType, UploadItem } from '@/lib/types/documents';
+import { groupFilesByHierarchy, getTypesFromGroups, getYearsForType, getMonthsForTypeAndYear, normalizeDateString } from '@/lib/utils/dateUtils';
 import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
+import { updateFileDatesWithExtractedData } from '@/lib/utils/fileDateUpdater';
 
 interface DashboardContentProps {
   files: FileData[];
   uploads: UploadItem[];
   onFileSelect: (file: File) => void;
+  isLoading?: boolean;
   onSearchChange?: (value: string) => void;
   onStatusFilterChange?: (value: string) => void;
   onDateFilterChange?: (value: string) => void;
@@ -27,6 +31,7 @@ export function DashboardContent({
   files,
   uploads,
   onFileSelect,
+  isLoading = false,
   onSearchChange,
   onStatusFilterChange,
   onDateFilterChange,
@@ -37,16 +42,35 @@ export function DashboardContent({
   getExtractedData
 }: DashboardContentProps) {
   const [activeView, setActiveView] = useState<'list' | 'folders'>('list');
-  const [currentFolder, setCurrentFolder] = useState<{
-    type: FileType;
-    year?: string;
-    month?: string;
-  } | undefined>(undefined);
+  const [currentFolder, setCurrentFolder] = useState<{ type: FileType; year?: string; month?: string } | undefined>(undefined);
+  const [updatedFiles, setUpdatedFiles] = useState<FileData[]>(files);
   const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
 
   useEffect(() => {
-    setFilteredFiles(files);
-  }, [files]);
+    if (getExtractedData) {
+      const extractedDataMap = new Map<number, ExtractedInvoiceData>();
+      files.forEach(file => {
+        const extracted = getExtractedData(file);
+        if (extracted) {
+          const documentId = parseInt(file.id.replace('#', ''));
+          extractedDataMap.set(documentId, extracted);
+        }
+      });
+      
+      if (extractedDataMap.size > 0) {
+        const filesWithCorrectDates = updateFileDatesWithExtractedData(files, extractedDataMap);
+        setUpdatedFiles(filesWithCorrectDates);
+      } else {
+        setUpdatedFiles(files);
+      }
+    } else {
+      setUpdatedFiles(files);
+    }
+  }, [files, getExtractedData]);
+
+  useEffect(() => {
+    setFilteredFiles(updatedFiles);
+  }, [updatedFiles]);
 
   const handleFolderSelect = (folder: { type: FileType; year?: string; month?: string } | undefined) => {
     setCurrentFolder(folder);
@@ -75,12 +99,16 @@ export function DashboardContent({
       if (file.type !== currentFolder.type) return false;
       
       if (currentFolder.year) {
-        const fileYear = new Date(file.date).getFullYear().toString();
+        const fileDate = normalizeDateString(file.date);
+        if (!fileDate) return false;
+        const fileYear = fileDate.getFullYear().toString();
         if (fileYear !== currentFolder.year) return false;
       }
       
       if (currentFolder.month) {
-        const fileMonth = (new Date(file.date).getMonth() + 1).toString().padStart(2, '0');
+        const fileDate = normalizeDateString(file.date);
+        if (!fileDate) return false;
+        const fileMonth = (fileDate.getMonth() + 1).toString().padStart(2, '0');
         if (fileMonth !== currentFolder.month) return false;
       }
       
@@ -89,38 +117,28 @@ export function DashboardContent({
   };
 
   const getSubFolders = () => {
+    const baseFiles = currentFolder?.type
+      ? updatedFiles.filter(file => file.type === currentFolder.type)
+      : updatedFiles;
+
+    const fileGroups = groupFilesByHierarchy(baseFiles);
+
+    let subFolders: Array<{ type: FileType; year?: string; month?: string }> = [];
+    
     if (!currentFolder) {
-      const types = new Set<FileType>();
-      filteredFiles.forEach(file => types.add(file.type));
-      return Array.from(types).map(type => ({ type }));
+      const types = getTypesFromGroups(fileGroups);
+      subFolders = types.map(type => ({ type }));
+    } else if (currentFolder.type && !currentFolder.year) {
+      const years = getYearsForType(fileGroups, currentFolder.type);
+      subFolders = years.map(year => ({ type: currentFolder.type, year }));
+    } else if (currentFolder.type && currentFolder.year && !currentFolder.month) {
+      const months = getMonthsForTypeAndYear(fileGroups, currentFolder.type, currentFolder.year);
+      subFolders = months.map(month => ({ type: currentFolder.type, year: currentFolder.year, month }));
+    } else if (currentFolder.type && currentFolder.year && currentFolder.month) {
+      subFolders = [];
     }
-
-    if (currentFolder.type && !currentFolder.year) {
-      const years = new Set<string>();
-      filteredFiles.forEach(file => {
-        if (file.type === currentFolder.type) {
-          years.add(new Date(file.date).getFullYear().toString());
-        }
-      });
-      return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a))
-        .map(year => ({ type: currentFolder.type, year }));
-    }
-
-    if (currentFolder.type && currentFolder.year && !currentFolder.month) {
-      const months = new Set<string>();
-      filteredFiles.forEach(file => {
-        if (file.type === currentFolder.type) {
-          const fileYear = new Date(file.date).getFullYear().toString();
-          if (fileYear === currentFolder.year) {
-            months.add((new Date(file.date).getMonth() + 1).toString().padStart(2, '0'));
-          }
-        }
-      });
-      return Array.from(months).sort((a, b) => parseInt(a) - parseInt(b))
-        .map(month => ({ type: currentFolder.type, year: currentFolder.year, month }));
-    }
-
-    return [];
+    
+    return subFolders;
   };
 
   return (
@@ -166,6 +184,7 @@ export function DashboardContent({
           ) : (
             <InvoiceTable 
               files={filteredFiles}
+              isLoading={isLoading}
               onViewInvoice={onViewInvoice}
               getExtractedData={getExtractedData}
             />

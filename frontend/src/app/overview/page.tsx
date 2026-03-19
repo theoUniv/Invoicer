@@ -1,25 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { OverviewContent } from '@/components/home';
 import { getFilesData, getInvoiceDetail } from '@/lib/services/filesService';
 import { FileData } from '@/lib/types/documents';
 import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Overview() {
+  const router = useRouter();
+  const { user } = useAuth();
   const [files, setFiles] = useState<FileData[]>([]);
   const [loading, setLoading] = useState(true);
   const [extractedData, setExtractedData] = useState<Map<number, ExtractedInvoiceData>>(new Map());
 
+  const roleName = user?.role?.name ? String(user.role.name).toLowerCase() : '';
+  const isAdmin = roleName === 'admin' || roleName === 'administrator' || roleName.includes('admin');
+
   useEffect(() => {
+    if (!user) return;
+    if (!isAdmin) {
+      router.replace('/home');
+      return;
+    }
+
     const loadData = async () => {
       try {
         const data = await getFilesData();
         setFiles(data.files);
         
         const processedFiles = data.files.filter(file => 
-          file.status === 'paid'
+          file.status === 'processed'
         );
         
         const extractedPromises = processedFiles.map(async (file) => {
@@ -52,7 +65,7 @@ export default function Overview() {
     };
 
     loadData();
-  }, []);
+  }, [user, isAdmin, router]);
 
   const handleSearchChange = (value: string) => {
     console.log('Search:', value);
@@ -75,19 +88,6 @@ export default function Overview() {
     return extractedData.get(documentId) || null;
   };
 
-  if (loading) {
-    return (
-      <AuthGuard requireAuth={true}>
-        <div className="min-h-screen bg-[#F4F1ED] pt-24 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A1817] mx-auto mb-4"></div>
-            <p className="text-[#8A8580]">Chargement des données...</p>
-          </div>
-        </div>
-      </AuthGuard>
-    );
-  }
-
   return (
     <AuthGuard requireAuth={true}>
       <div className="min-h-screen bg-[#F4F1ED] pt-24" 
@@ -98,6 +98,7 @@ export default function Overview() {
         
         <OverviewContent
           files={files}
+          isLoading={loading}
           onSearchChange={handleSearchChange}
           onStatusFilterChange={handleStatusFilterChange}
           onDateFilterChange={handleDateFilterChange}

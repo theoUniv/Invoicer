@@ -6,6 +6,8 @@ import { useAppTranslation } from '@/hooks/useTranslation';
 import { FileModal } from './FileModal';
 import { getDocumentDetail } from '@/lib/api';
 import { extractInvoiceData } from '@/lib/utils/documentDetailTransform';
+import { groupFilesByHierarchy, getFilesInGroup, countFilesInGroup, getTypesFromGroups, getYearsForType, getMonthsForTypeAndYear } from '@/lib/utils/dateUtils';
+import { updateFileDatesWithExtractedData } from '@/lib/utils/fileDateUpdater';
 
 interface FolderGridProps {
   files: FileData[];
@@ -19,7 +21,7 @@ const getFileIcon = (type: string) => {
   switch (type) {
     case 'invoice':
       return <FileText className="w-10 h-10 text-[#121212]" />;
-    case 'quote':
+    case 'devis':
       return <FileText className="w-10 h-10 text-[#121212]" />;
     default:
       return <File className="w-10 h-10 text-[#121212]" />;
@@ -32,7 +34,7 @@ const getFolderLabel = (type: FileType, t: any) => {
       return t('dashboard.folders.invoices');
     case 'contract':
       return t('dashboard.folders.contracts');
-    case 'quote':
+    case 'devis':
       return t('dashboard.folders.quotes');
     case 'expense':
       return t('dashboard.folders.expenses');
@@ -43,29 +45,42 @@ const getFolderLabel = (type: FileType, t: any) => {
 
 const getMonthLabel = (month: string, t: any) => {
   const months = t('dashboard.folders.months');
-  return months[month] || month;
+
+  if (months && typeof months === 'object' && !Array.isArray(months)) {
+    return months[month] || month;
+  }
+
+  const monthMap: Record<string, string> = {
+    '01': 'Janvier',
+    '02': 'Février',
+    '03': 'Mars',
+    '04': 'Avril',
+    '05': 'Mai',
+    '06': 'Juin',
+    '07': 'Juillet',
+    '08': 'Août',
+    '09': 'Septembre',
+    '10': 'Octobre',
+    '11': 'Novembre',
+    '12': 'Décembre',
+  };
+
+  return monthMap[month] || month;
 };
 
-const getFolderInfo = (folder: { type: FileType; year?: string; month?: string }, allFiles: FileData[], t: any) => {
+const getFolderInfo = (folder: { type: FileType; year?: string; month?: string }, groups: Record<string, Record<string, Record<string, FileData[]>>>, t: any) => {
   let label = '';
   let fileCount = 0;
   
   if (!folder.year) {
     label = getFolderLabel(folder.type, t);
-    fileCount = allFiles.filter(f => f.type === folder.type).length;
+    fileCount = countFilesInGroup(groups, folder.type);
   } else if (!folder.month) {
     label = folder.year;
-    fileCount = allFiles.filter(f => 
-      f.type === folder.type && 
-      new Date(f.date).getFullYear().toString() === folder.year
-    ).length;
+    fileCount = countFilesInGroup(groups, folder.type, folder.year);
   } else {
     label = getMonthLabel(folder.month, t);
-    fileCount = allFiles.filter(f => 
-      f.type === folder.type && 
-      new Date(f.date).getFullYear().toString() === folder.year &&
-      (new Date(f.date).getMonth() + 1).toString().padStart(2, '0') === folder.month
-    ).length;
+    fileCount = countFilesInGroup(groups, folder.type, folder.year, folder.month);
   }
   
   return { label, fileCount };
@@ -78,41 +93,88 @@ export function FolderGrid({
   onFolderSelect, 
   onViewFile 
 }: FolderGridProps) {
-  const { t } = useAppTranslation();
+  const { t, translations, currentLanguage } = useAppTranslation();
   const shouldShowFiles = currentFolder?.month !== undefined;
   
   const { showContextMenu, ContextMenuComponent } = useContextMenu();
   const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [extractedData, setExtractedData] = useState<Map<number, any>>(new Map());
+  const [updatedFiles, setUpdatedFiles] = useState<FileData[]>(files);
+
+  useEffect(() => {
+    if (extractedData.size > 0) {
+      const filesWithCorrectDates = updateFileDatesWithExtractedData(files, extractedData);
+      setUpdatedFiles(filesWithCorrectDates);
+      
+      const updatedCount = filesWithCorrectDates.filter((f: any, i: number) => 
+        f.date !== files[i]?.date
+      ).length;
+      
+    } else {
+      setUpdatedFiles(files);
+    }
+  }, [files, extractedData]);
+
+  const fileGroups = groupFilesByHierarchy(updatedFiles);
+  
+  const computeSubFolders = () => {
+    let folders: Array<{ type: FileType; year?: string; month?: string }> = [];
+
+    if (!currentFolder) {
+      const types = getTypesFromGroups(fileGroups);
+      folders = types.map((type) => ({ type }));
+    } else if (currentFolder.type && !currentFolder.year) {
+      const years = getYearsForType(fileGroups, currentFolder.type);
+      folders = years.map((year) => ({ type: currentFolder.type, year }));
+    } else if (currentFolder.type && currentFolder.year && !currentFolder.month) {
+      const months = getMonthsForTypeAndYear(fileGroups, currentFolder.type, currentFolder.year);
+      folders = months.map((month) => ({ type: currentFolder.type, year: currentFolder.year, month }));
+    } else {
+      folders = [];
+    }
+
+    return folders;
+  };
+
+  const computed = computeSubFolders();
+  const effectiveSubFolders =
+    computed.length > 0 ? computed : subFolders;
+
+  const showSubFolders = effectiveSubFolders.length > 0;
+
+  const currentFolderFiles = currentFolder 
+    ? getFilesInGroup(fileGroups, currentFolder.type, currentFolder.year, currentFolder.month)
+    : updatedFiles;
 
   useEffect(() => {
     const fetchDocumentDetails = async () => {
-      const paidFiles = files.filter(file => 
-        file.status === 'paid' && 
+      const processedFiles = files.filter(file => 
+        file.status === 'processed' && 
         file.id !== '#000001' && 
         file.id !== '#000002' &&
         !extractedData.has(parseInt(file.id.replace('#', '')))
       );
 
-      if (paidFiles.length > 0) {
-        const promises = paidFiles.map(async (file) => {
+      if (processedFiles.length > 0) {
+        const promises = processedFiles.map(async (file) => {
           const documentId = parseInt(file.id.replace('#', ''));
           try {
-            const detail = await getDocumentDetail(documentId);
-            const extracted = extractInvoiceData(detail.data);
-            return { documentId, detail: extracted };
+            const detail = await getDocumentDetail(documentId, translations, currentLanguage);
+            const extracted = extractInvoiceData(detail.data, translations, currentLanguage);
+            return { documentId, detail: detail.data, extracted };
           } catch (error) {
             console.error(`Error fetching detail for document ${documentId}:`, error);
-            return { documentId, detail: null };
+            return { documentId, detail: null, extracted: null };
           }
         });
 
         const results = await Promise.all(promises);
         const newExtractedData = new Map<number, any>();
-        results.forEach(({ documentId, detail }) => {
-          if (detail) {
-            newExtractedData.set(documentId, detail);
+        
+        results.forEach(({ documentId, detail, extracted }) => {
+          if (extracted) {
+            newExtractedData.set(documentId, extracted);
           }
         });
 
@@ -122,10 +184,10 @@ export function FolderGrid({
       }
     };
 
-    if (shouldShowFiles && files.length > 0) {
+    if (files.length > 0) {
       fetchDocumentDetails();
     }
-  }, [files, shouldShowFiles]);
+  }, [files, translations, currentLanguage]);
 
   const getExtractedDataForFile = (file: FileData) => {
     const documentId = parseInt(file.id.replace('#', ''));
@@ -199,11 +261,11 @@ export function FolderGrid({
   return (
     <div className="flex-1 flex flex-col">
       <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-8">
-        {subFolders.map((folder, index) => {
-          const { label, fileCount } = getFolderInfo(folder, files, t);
+        {showSubFolders && effectiveSubFolders.map((folder, index) => {
+          const { label, fileCount } = getFolderInfo(folder, fileGroups, t);
           const isCurrentFolder = currentFolder && 
-            currentFolder.type === folder.type &&
-            currentFolder.year === folder.year &&
+            currentFolder.type === folder.type && 
+            currentFolder.year === folder.year && 
             currentFolder.month === folder.month;
           
           return (
@@ -229,7 +291,7 @@ export function FolderGrid({
           );
         })}
         
-        {shouldShowFiles && files.map((file, index) => {
+        {shouldShowFiles && currentFolderFiles.map((file, index) => {
           const fileWithDetails = getFileDataWithDetails(file);
           return (
             <div 
