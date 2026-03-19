@@ -1,5 +1,6 @@
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { FileData, FileType } from '@/lib/types/documents';
+import { normalizeDateString } from '@/lib/utils/dateUtils';
 import { Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -88,11 +89,18 @@ export function DashboardHeader({
   const { t } = useAppTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending'>('all');
+  const [dateFilter, setDateFilter] = useState<'thisMonth' | 'lastMonth' | 'yearToDate'>('thisMonth');
 
   const handleStatusFilterChange = (value: string) => {
     const next = value as 'all' | 'paid' | 'pending';
     setStatusFilter(next);
     onStatusFilterChange?.(next);
+  };
+
+  const handleDateFilterChange = (value: string) => {
+    const next = value as 'thisMonth' | 'lastMonth' | 'yearToDate';
+    setDateFilter(next);
+    onDateFilterChange?.(next);
   };
 
   useEffect(() => {
@@ -110,9 +118,32 @@ export function DashboardHeader({
           return raw === 'pending' || raw === 'uploaded' || raw === 'processing';
         });
 
-    onFilteredFilesChange?.(statusFilteredFiles);
+    const now = new Date();
+    const startOfNow = now.getTime();
+
+    const dateFilteredFiles = statusFilteredFiles.filter(file => {
+      const fileDate = normalizeDateString(file.date);
+      if (!fileDate) return false;
+
+      const fileTime = fileDate.getTime();
+
+      let startTime: number;
+      if (dateFilter === 'thisMonth' || dateFilter === 'lastMonth') {
+        const d = new Date(now);
+        d.setMonth(d.getMonth() - 1);
+        startTime = d.getTime();
+      } else {
+        const d = new Date(now);
+        d.setFullYear(d.getFullYear() - 1);
+        startTime = d.getTime();
+      }
+
+      return fileTime >= startTime && fileTime <= startOfNow;
+    });
+
+    onFilteredFilesChange?.(dateFilteredFiles);
     onSearchChange?.(searchTerm);
-  }, [searchTerm, files, statusFilter, onFilteredFilesChange, onSearchChange]);
+  }, [searchTerm, files, statusFilter, dateFilter, onFilteredFilesChange, onSearchChange]);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -216,11 +247,12 @@ export function DashboardHeader({
         </select>
         <select
           className="bg-transparent border-b border-[rgba(26,24,23,0.12)] py-2 text-sm text-[#1A1817] outline-none transition-colors focus:border-[#1A1817] w-30"
-          onChange={(e) => onDateFilterChange?.(e.target.value)}
+          value={dateFilter}
+          onChange={(e) => handleDateFilterChange(e.target.value)}
         >
-          <option>{t('dashboard.thisMonth')}</option>
-          <option>{t('dashboard.lastMonth')}</option>
-          <option>{t('dashboard.yearToDate')}</option>
+          <option value="thisMonth">{t('dashboard.thisMonth')}</option>
+          <option value="lastMonth">{t('dashboard.lastMonth')}</option>
+          <option value="yearToDate">{t('dashboard.yearToDate')}</option>
         </select>
       </div>
     </div>
