@@ -5,6 +5,7 @@ const { getPrisma } = require("../lib/prisma");
 const { getMinioClient, getRawBucket } = require("../lib/minio");
 const { normalizeMinioObjectKey } = require("../utils/minioObjectKey");
 const { asyncHandler } = require("../middleware/asyncHandler");
+const { requireAuth } = require("../middleware/requireAuth");
 
 const router = express.Router();
 
