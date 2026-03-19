@@ -1,8 +1,10 @@
-import { X, Download, Eye, History, User, Cpu, ChevronDown, ChevronUp, Edit2, Save, XCircle } from 'lucide-react';
-import { FileData, getDocument, Document, DocumentVersion } from '@/lib/files';
 import { useAppTranslation } from '@/hooks/useTranslation';
-import { useState, useEffect } from 'react';
+import { getDocument } from '@/lib/api';
 import { createDocumentVersion } from '@/lib/services/filesService';
+import { DocumentVersion } from '@/lib/types/documentDetail';
+import { Document, FileData } from '@/lib/types/documents';
+import { ChevronDown, ChevronUp, Download, Edit2, Eye, History, Save, User, X, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface FileModalProps {
   file: FileData | null;
@@ -26,7 +28,7 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
     setLoading(true);
     try {
       const doc = await getDocument(id);
-      setFullDoc(doc);
+      setFullDoc(doc as any);
     } catch (err) {
       console.error('Error fetching full doc:', err);
     } finally {
@@ -117,7 +119,6 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-[rgba(18,18,18,0.08)]">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[rgba(18,18,18,0.08)] bg-[#FDFDFB]">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-[#121212] rounded-lg">
@@ -136,9 +137,7 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-          {/* Main Info Card */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#F8F8F6] p-5 rounded-xl border border-[rgba(18,18,18,0.04)]">
             <div className="space-y-4">
               <div className="flex flex-col">
@@ -166,7 +165,6 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
             </div>
           </div>
 
-          {/* History Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-[#121212] uppercase tracking-widest flex items-center gap-2">
@@ -177,7 +175,7 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
             </div>
 
             <div className="space-y-3">
-              {fullDoc?.versions?.map((version, idx) => {
+              {(fullDoc as any)?.versions?.map((version: DocumentVersion, idx: number) => {
                 const isLatest = idx === 0;
                 const isCurrentlyEditing = isEditing && isLatest;
 
@@ -302,14 +300,13 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
                   </div>
                 );
               })}
-              {!loading && (!fullDoc?.versions || fullDoc.versions.length === 0) && (
+              {!loading && (!(fullDoc as any)?.versions || (fullDoc as any).versions.length === 0) && (
                 <p className="text-center py-8 text-sm text-[#6B6B66] italic bg-[#F8F8F6] rounded-xl">Aucun historique disponible pour ce document.</p>
               )}
             </div>
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="p-6 border-t border-[rgba(18,18,18,0.08)] bg-white flex gap-3">
           <button
             onClick={handleView}

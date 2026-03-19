@@ -4,3 +4,5 @@ export * from "./getDocuments";
 export * from "./getMyFiles";
 export * from "./uploadFile";
 export * from "./createDocumentVersion";
+export * from "./getDocument";
+
