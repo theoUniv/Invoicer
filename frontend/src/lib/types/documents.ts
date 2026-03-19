@@ -30,7 +30,7 @@ export interface DocumentsResponse {
   };
 }
 
-export type FileType = 'invoice' | 'contract' | 'quote' | 'expense' | 'other';
+export type FileType = 'invoice' | 'contract' | 'devis' | 'expense' | 'other';
 
 export interface FileData {
   id: string;
@@ -57,5 +57,5 @@ export interface Invoice {
   date: string;
   vendor: string;
   amount: string;
-  status: 'paid' | 'pending';
+  status: 'processed' | 'pending';
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isAuthenticated } from '@/lib/auth';
+import { isAuthenticated, getCurrentUser } from '@/lib/auth';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -16,14 +16,25 @@ export function AuthGuard({ children, requireAuth = false, redirectTo }: AuthGua
   const [isAuthenticatedUser, setIsAuthenticatedUser] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const authenticated = isAuthenticated();
-      setIsAuthenticatedUser(authenticated);
+    const checkAuth = async () => {
+      const hasToken = isAuthenticated();
+      
+      if (requireAuth && hasToken) {
+        try {
+          const user = await getCurrentUser();
+          setIsAuthenticatedUser(user !== null);
+        } catch {
+          setIsAuthenticatedUser(false);
+        }
+      } else {
+        setIsAuthenticatedUser(hasToken);
+      }
+      
       setIsChecking(false);
 
-      if (requireAuth && !authenticated) {
+      if (requireAuth && !hasToken) {
         router.push('/login');
-      } else if (!requireAuth && authenticated) {
+      } else if (!requireAuth && hasToken) {
         router.push(redirectTo || '/home');
       }
     };
