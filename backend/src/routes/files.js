@@ -102,6 +102,7 @@ router.get(
       skip,
       include: {
         documentType: true,
+        companyLinks: { include: { company: true } },
       },
     });
 

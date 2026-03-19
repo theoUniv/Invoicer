@@ -38,17 +38,17 @@ export interface ApiError {
   };
 }
 
-const API_BASE_URL = 'http://72.60.37.180:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 let lastErrorTime = 0;
 let errorCount = 0;
 
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}/auth${endpoint}`;
-  
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
-  
+
   try {
     const response = await fetch(url, {
       signal: controller.signal,
@@ -58,20 +58,20 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
       },
       ...options,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: { message: 'Network error' } }));
       throw new Error(errorData.error?.message || `HTTP ${response.status}`);
     }
-    
+
     errorCount = 0;
-    
+
     return response.json();
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     const now = Date.now();
     if (now - lastErrorTime < 10000) {
       errorCount++;
@@ -79,11 +79,11 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
       errorCount = 1;
     }
     lastErrorTime = now;
-    
+
     if (errorCount <= 2) {
       console.error(`Auth API Error (${endpoint}):`, error);
     }
-    
+
     throw error;
   }
 }
@@ -117,7 +117,7 @@ export const loginUser = async (email: string, password: string): Promise<{ succ
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    
+
     setAuthCookie(response.data.token);
     return {
       success: true,
@@ -138,7 +138,7 @@ export const registerUser = async (data: RegisterData): Promise<{ success: boole
       method: 'POST',
       body: JSON.stringify(data),
     });
-    
+
     setAuthCookie(response.data.token);
     return {
       success: true,
@@ -156,7 +156,7 @@ export const registerUser = async (data: RegisterData): Promise<{ success: boole
 export const getCurrentUser = async (): Promise<AuthUser | null> => {
   const token = getAuthCookie();
   if (!token) return null;
-  
+
   try {
     const response = await apiCall<{ data: { user: AuthUser } }>('/me', {
       headers: {
@@ -172,7 +172,7 @@ export const getCurrentUser = async (): Promise<AuthUser | null> => {
 
 export const logoutUser = async (): Promise<{ success: boolean; error?: string }> => {
   const token = getAuthCookie();
-  
+
   try {
     if (token) {
       await apiCall('/logout', {
@@ -182,7 +182,7 @@ export const logoutUser = async (): Promise<{ success: boolean; error?: string }
         }
       });
     }
-    
+
     removeAuthCookie();
     return { success: true };
   } catch (error) {
@@ -194,7 +194,7 @@ export const logoutUser = async (): Promise<{ success: boolean; error?: string }
 export const getCurrentUserSync = (): AuthUser | null => {
   const token = getAuthCookie();
   if (!token) return null;
-  
+
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
     return {

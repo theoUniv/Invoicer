@@ -7,6 +7,7 @@ import { InvoiceTable } from './InvoiceTable';
 import { InvoiceFolders } from './InvoiceFolders';
 import { UploadPanel } from './UploadPanel';
 import { FileData, UploadItem, FileType } from '@/lib/types/documents';
+import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
 
 interface DashboardContentProps {
   files: FileData[];
@@ -19,6 +20,7 @@ interface DashboardContentProps {
   onUploadStart?: (item: UploadItem) => void;
   onUploadFinish?: (itemName: string) => void;
   onUploadComplete?: () => void;
+  getExtractedData?: (file: FileData) => ExtractedInvoiceData | null;
 }
 
 export function DashboardContent({
@@ -31,7 +33,8 @@ export function DashboardContent({
   onViewInvoice,
   onUploadStart,
   onUploadFinish,
-  onUploadComplete
+  onUploadComplete,
+  getExtractedData
 }: DashboardContentProps) {
   const [activeView, setActiveView] = useState<'list' | 'folders'>('list');
   const [currentFolder, setCurrentFolder] = useState<{
@@ -164,6 +167,7 @@ export function DashboardContent({
             <InvoiceTable 
               files={filteredFiles}
               onViewInvoice={onViewInvoice}
+              getExtractedData={getExtractedData}
             />
           )
         ) : (

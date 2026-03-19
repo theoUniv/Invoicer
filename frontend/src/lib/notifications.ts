@@ -16,9 +16,9 @@ export const addNotification = (notification: Omit<Notification, 'id'>) => {
     duration: notification.duration || 5000,
     ...notification
   };
-  
+
   notifications.push(fullNotification);
-  
+
   if (typeof window !== 'undefined') {
     const event = new CustomEvent('notification', {
       detail: fullNotification

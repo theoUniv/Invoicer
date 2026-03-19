@@ -67,7 +67,7 @@ export default function Overview() {
   };
 
   const handleViewInvoice = (file: FileData) => {
-    window.open(`http://72.60.37.180:3001/api/documents/${file.id.replace('#', '')}/raw-file`, '_blank');
+    window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/documents/${file.id.replace('#', '')}/raw-file`, '_blank');
   };
 
   const getExtractedDataForFile = (file: FileData): ExtractedInvoiceData | null => {
