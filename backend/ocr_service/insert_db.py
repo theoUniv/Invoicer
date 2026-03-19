@@ -4,6 +4,7 @@ import mysql.connector
 import json
 import argparse
 import tempfile
+import sys
 from minio import Minio
 
 load_dotenv()
@@ -19,6 +20,9 @@ connection = mysql.connector.connect(
 cursor = connection.cursor()
 
 def get_or_create_company(supplier):
+    if not supplier or not supplier.get("siret"):
+        return None
+        
     query = "SELECT company_id FROM companies WHERE siret = %s"
     cursor.execute(query, (supplier["siret"],))
     result = cursor.fetchone()
@@ -31,7 +35,7 @@ def get_or_create_company(supplier):
     VALUES (%s, %s, %s)
     """
     values = (
-        supplier.get("name"),
+        supplier.get("name") or "Unknown Company",
         supplier.get("siret"),
         supplier.get("tva"),
     )
@@ -40,6 +44,7 @@ def get_or_create_company(supplier):
     return cursor.lastrowid
 
 def link_document_company(document_id, company_id):
+    if not company_id: return
     query = """
     INSERT INTO document_company_links (document_id, company_id)
     VALUES (%s, %s)
@@ -48,7 +53,7 @@ def link_document_company(document_id, company_id):
     cursor.execute(query, (document_id, company_id))
     connection.commit()
 
-def update_document(document_id, json_data):
+def update_document(document_id, json_data, fallback_name):
     query = """
     UPDATE documents 
     SET status = 'processed', 
@@ -56,20 +61,23 @@ def update_document(document_id, json_data):
         storage_path = %s
     WHERE document_id = %s
     """
-    invoice_number = json_data.get("invoice_number", "unknown")
+    # Use fallback if invoice_number is None or empty
+    invoice_number = json_data.get("invoice_number") or fallback_name
     storage_path = f"gold/invoices/{invoice_number}.json"
     cursor.execute(query, (invoice_number, storage_path, document_id))
     connection.commit()
 
-def insert_document(json_data):
+def insert_document(json_data, fallback_name):
     query = """
     INSERT INTO documents (document_type_id, original_name, storage_path, status)
     VALUES (%s, %s, %s, 'processed')
     """
+    # Use fallback if invoice_number is None or empty
+    invoice_number = json_data.get("invoice_number") or fallback_name
     values = (
         1,
-        json_data["invoice_number"],
-        f"gold/invoices/{json_data['invoice_number']}.json"
+        invoice_number,
+        f"gold/invoices/{invoice_number}.json"
     )
     cursor.execute(query, values)
     connection.commit()
@@ -88,13 +96,13 @@ def insert_fields(version_id, json_data):
     fields = {
         "invoice_number": json_data.get("invoice_number"),
         "issue_date": json_data.get("issue_date"),
-        "siret": json_data["supplier"].get("siret"),
-        "tva": json_data["supplier"].get("tva"),
+        "siret": json_data["supplier"].get("siret") if "supplier" in json_data else None,
+        "tva": json_data["supplier"].get("tva") if "supplier" in json_data else None,
         "total_ttc": json_data.get("total_ttc"),
         "total_ht": json_data.get("total_ht"),
         "total_tva": json_data.get("total_tva"),
-        "client_name": json_data["client"] .get("name") if "client" in json_data else None,
-        "client_address": json_data["client"].get("address") if "client" in json_data else None,
+        "client_name": json_data.get("client", {}).get("name"),
+        "client_address": json_data.get("client", {}).get("address"),
     }
     query = "INSERT INTO document_fields (version_id, field_name, field_value) VALUES (%s, %s, %s)"
     for key, value in fields.items():
@@ -103,6 +111,7 @@ def insert_fields(version_id, json_data):
     connection.commit()
 
 def insert_items(version_id, items):
+    if not items: return
     query = "INSERT INTO document_fields (version_id, field_name, field_value) VALUES (%s, %s, %s)"
     for i, item in enumerate(items):
         prefix = f"item_{i}"
@@ -117,14 +126,16 @@ def insert_items(version_id, items):
                 cursor.execute(query, (version_id, key, str(value)))
     connection.commit()
 
-def process_invoice_insertion(json_data, document_id=None):
-    company_id = get_or_create_company(json_data["supplier"]) if "supplier" in json_data else None
+def process_invoice_insertion(json_data, fallback_name, document_id=None):
+    company_id = get_or_create_company(json_data.get("supplier"))
     
     if document_id:
-        update_document(document_id, json_data)
+        update_document(document_id, json_data, fallback_name)
         doc_id = document_id
+        print(f"Updated document {doc_id}")
     else:
-        doc_id = insert_document(json_data)
+        doc_id = insert_document(json_data, fallback_name)
+        print(f"Inserted new document {doc_id}")
 
     if company_id:
         link_document_company(doc_id, company_id)
@@ -145,7 +156,6 @@ def main():
 
     json_name = args.json_name
     document_id = args.document_id
-    print(f"DEBUG: insert_db.py received raw document_id='{document_id}'")
     
     # Handle Airflow passing "None" as a string if XCom is empty
     if document_id == "None" or document_id == "":
@@ -175,11 +185,14 @@ def main():
             os.unlink(temp_in.name)
 
         print(f"Processing data for document_id: {document_id}")
-        result = process_invoice_insertion(gold_data, document_id)
+        # Use filename as fallback if invoice_number is None
+        fallback_name = json_name.rsplit('.', 1)[0]
+        result = process_invoice_insertion(gold_data, fallback_name, document_id)
         print(result)
 
     except Exception as e:
-        print(f"An error occurred in DB insertion: {e}")
+        print(f"An error occurred in DB insertion: {e}", file=sys.stderr)
+        sys.exit(1)
     finally:
         cursor.close()
         connection.close()
