@@ -12,8 +12,6 @@ export function getValidFileDate(file: FileData): Date | null {
 export function normalizeDateString(dateString: string): Date | null {
   if (!dateString) return null;
   
-  console.log(`Normalizing date: "${dateString}"`);
-  
   const frenchMonths = {
     'janvier': '01', 'février': '02', 'mars': '03', 'avril': '04', 'mai': '05', 'juin': '06',
     'juillet': '07', 'août': '08', 'septembre': '09', 'octobre': '10', 'novembre': '11', 'décembre': '12'
@@ -26,7 +24,6 @@ export function normalizeDateString(dateString: string): Date | null {
     if (monthNum) {
       const isoDate = `${year}-${monthNum}-${day.padStart(2, '0')}`;
       const result = new Date(isoDate);
-      console.log(`French format parsed: ${dateString} → ${isoDate} → ${result.toISOString()}`);
       return !isNaN(result.getTime()) ? result : null;
     }
   }
@@ -44,12 +41,10 @@ export function normalizeDateString(dateString: string): Date | null {
   for (let i = 0; i < formats.length; i++) {
     const format = formats[i];
     if (format instanceof Date && !isNaN(format.getTime())) {
-      console.log(`Format ${i} worked: ${dateString} → ${format.toISOString()}`);
       return format;
     }
   }
   
-  console.log(`All formats failed for: ${dateString}`);
   return null;
 }
 
@@ -77,9 +72,6 @@ export function groupFilesByHierarchy(files: FileData[]) {
     
     groups[type][year][month].push(file);
   });
-  
-  console.log('Final groups structure:', groups);
-  console.log('========================');
   
   return groups;
 }

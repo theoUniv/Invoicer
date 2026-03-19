@@ -101,12 +101,10 @@ export async function getMyFilesData(params?: {
 }
 
 export async function addUploadItem(file: File): Promise<FilesData> {
-  console.log('Upload legacy function called - to be implemented with real API');
   return { files: [], uploads: [{ name: file.name, status: 'processing' }] };
 }
 
 export async function updateUploadStatus(index: number, status: 'processing' | 'done'): Promise<FilesData> {
-  console.log('Update upload status legacy function called - to be implemented');
   return { files: [], uploads: [] };
 }
 

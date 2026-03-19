@@ -72,8 +72,6 @@ const getFolderInfo = (folder: { type: FileType; year?: string; month?: string }
   let label = '';
   let fileCount = 0;
   
-  console.log('getFolderInfo called with:', { folder, groupsKeys: Object.keys(groups) });
-  
   if (!folder.year) {
     label = getFolderLabel(folder.type, t);
     fileCount = countFilesInGroup(groups, folder.type);
@@ -84,8 +82,6 @@ const getFolderInfo = (folder: { type: FileType; year?: string; month?: string }
     label = getMonthLabel(folder.month, t);
     fileCount = countFilesInGroup(groups, folder.type, folder.year, folder.month);
   }
-  
-  console.log('getFolderInfo result:', { label, fileCount });
   
   return { label, fileCount };
 };
@@ -107,10 +103,6 @@ export function FolderGrid({
   const [updatedFiles, setUpdatedFiles] = useState<FileData[]>(files);
 
   useEffect(() => {
-    console.log('=== FILE DATE UPDATE ===');
-    console.log('Original files count:', files.length);
-    console.log('Extracted data count:', extractedData.size);
-    
     if (extractedData.size > 0) {
       const filesWithCorrectDates = updateFileDatesWithExtractedData(files, extractedData);
       setUpdatedFiles(filesWithCorrectDates);
@@ -118,13 +110,10 @@ export function FolderGrid({
       const updatedCount = filesWithCorrectDates.filter((f: any, i: number) => 
         f.date !== files[i]?.date
       ).length;
-      console.log(`✅ Updated ${updatedCount} files with extracted dates`);
       
     } else {
-      console.log('⚠️ No extracted data yet, using original files');
       setUpdatedFiles(files);
     }
-    console.log('========================');
   }, [files, extractedData]);
 
   const fileGroups = groupFilesByHierarchy(updatedFiles);
@@ -154,13 +143,6 @@ export function FolderGrid({
 
   const showSubFolders = effectiveSubFolders.length > 0;
 
-  console.log('=== FOLDER GRID DEBUG ===');
-  console.log('shouldShowFiles:', shouldShowFiles);
-  console.log('showSubFolders:', showSubFolders);
-  console.log('effectiveSubFolders:', effectiveSubFolders);
-  console.log('currentFolder:', currentFolder);
-  console.log('========================');
-  
   const currentFolderFiles = currentFolder 
     ? getFilesInGroup(fileGroups, currentFolder.type, currentFolder.year, currentFolder.month)
     : updatedFiles;

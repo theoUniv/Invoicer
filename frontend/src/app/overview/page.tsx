@@ -1,18 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { OverviewContent } from '@/components/home';
 import { getFilesData, getInvoiceDetail } from '@/lib/services/filesService';
 import { FileData } from '@/lib/types/documents';
 import { ExtractedInvoiceData } from '@/lib/utils/documentDetailTransform';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Overview() {
+  const router = useRouter();
+  const { user } = useAuth();
   const [files, setFiles] = useState<FileData[]>([]);
   const [loading, setLoading] = useState(true);
   const [extractedData, setExtractedData] = useState<Map<number, ExtractedInvoiceData>>(new Map());
 
+  const roleName = user?.role?.name ? String(user.role.name).toLowerCase() : '';
+  const isAdmin = roleName === 'admin' || roleName === 'administrator' || roleName.includes('admin');
+
   useEffect(() => {
+    if (!user) return;
+    if (!isAdmin) {
+      router.replace('/home');
+      return;
+    }
+
     const loadData = async () => {
       try {
         const data = await getFilesData();
@@ -52,7 +65,7 @@ export default function Overview() {
     };
 
     loadData();
-  }, []);
+  }, [user, isAdmin, router]);
 
   const handleSearchChange = (value: string) => {
     console.log('Search:', value);

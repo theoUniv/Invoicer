@@ -39,7 +39,27 @@ const getFolderLabel = (type: FileType, t: any) => {
 
 const getMonthLabel = (month: string, t: any) => {
   const months = t('dashboard.folders.months');
-  return months[month] || month;
+
+  if (months && typeof months === 'object' && !Array.isArray(months)) {
+    return months[month] || month;
+  }
+
+  const monthMap: Record<string, string> = {
+    '01': 'Janvier',
+    '02': 'Février',
+    '03': 'Mars',
+    '04': 'Avril',
+    '05': 'Mai',
+    '06': 'Juin',
+    '07': 'Juillet',
+    '08': 'Août',
+    '09': 'Septembre',
+    '10': 'Octobre',
+    '11': 'Novembre',
+    '12': 'Décembre',
+  };
+
+  return monthMap[month] || month;
 };
 
 const getYearsFromFiles = (files: FileData[]) => {

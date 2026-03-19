@@ -66,7 +66,7 @@ export function DataTableHeaderCell({ children, className = '', width }: DataTab
   const widthStyle = width ? { width } : {};
   return (
     <th 
-      className={`py-4 text-xs uppercase tracking-[0.05em] text-[#8A8580] font-normal border-b border-[#1A1817] ${className}`}
+      className={`py-4 text-xs uppercase tracking-[0.05em] text-[#8A8580] font-normal border-b border-[#1A1817] sticky top-0 z-20 ${className}`}
       style={widthStyle}
     >
       {children}

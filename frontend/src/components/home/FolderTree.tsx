@@ -1,10 +1,10 @@
 'use client';
 
 import { useAppTranslation } from '@/hooks/useTranslation';
+import { FileData, FileType } from '@/lib/types/documents';
+import { getMonthsForTypeAndYear, getTypesFromGroups, getYearsForType, groupFilesByHierarchy } from '@/lib/utils/dateUtils';
 import { ChevronRight, Folder } from 'lucide-react';
-import { FileType, FileData } from '@/lib/types/documents';
-import { useState, useEffect } from 'react';
-import { groupFilesByHierarchy, getTypesFromGroups, getYearsForType, getMonthsForTypeAndYear } from '@/lib/utils/dateUtils';
+import { useState } from 'react';
 
 interface FolderTreeProps {
   files: FileData[];

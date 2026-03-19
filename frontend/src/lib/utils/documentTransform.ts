@@ -5,8 +5,6 @@ export function documentToFileData(doc: Document): FileData {
   
   const date = doc.uploadedAt;
   
-  console.log('documentToFileData - Using uploadedAt:', { documentId: doc.documentId, date });
-  
   const mapDocumentType = (docTypeName: string): FileType => {
     switch (docTypeName.toLowerCase()) {
       case 'invoice':

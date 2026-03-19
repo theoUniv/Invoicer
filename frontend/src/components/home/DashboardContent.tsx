@@ -62,7 +62,6 @@ export function DashboardContent({
       if (extractedDataMap.size > 0) {
         const filesWithCorrectDates = updateFileDatesWithExtractedData(files, extractedDataMap);
         setUpdatedFiles(filesWithCorrectDates);
-        console.log('DashboardContent: Updated files with extracted dates');
       } else {
         setUpdatedFiles(files);
       }
@@ -76,7 +75,6 @@ export function DashboardContent({
   }, [updatedFiles]);
 
   const handleFolderSelect = (folder: { type: FileType; year?: string; month?: string } | undefined) => {
-    console.log('handleFolderSelect called with:', folder);
     setCurrentFolder(folder);
   };
 
@@ -127,10 +125,6 @@ export function DashboardContent({
 
     const fileGroups = groupFilesByHierarchy(baseFiles);
 
-    console.log('=== GET SUBFOLDERS ===');
-    console.log('Current folder:', currentFolder);
-    console.log('File groups:', fileGroups);
-    
     let subFolders: Array<{ type: FileType; year?: string; month?: string }> = [];
     
     if (!currentFolder) {
@@ -145,9 +139,6 @@ export function DashboardContent({
     } else if (currentFolder.type && currentFolder.year && currentFolder.month) {
       subFolders = [];
     }
-    
-    console.log('Final subFolders:', subFolders);
-    console.log('====================');
     
     return subFolders;
   };

@@ -9,7 +9,10 @@ import { useAuth } from '@/hooks/useAuth';
 export function Navbar() {
   const { t } = useAppTranslation();
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+
+  const roleName = user?.role?.name ? String(user.role.name).toLowerCase() : '';
+  const isAdmin = roleName === 'admin' || roleName.includes('admin');
 
   const handleLogout = () => {
     logout();
@@ -25,11 +28,13 @@ export function Navbar() {
         }`}>
           {t('dashboard.myFiles')}
         </Link>
-        <Link href="/overview" className={`text-xs uppercase tracking-[0.05em] transition-colors ${
-          pathname === '/overview' ? 'text-[#1A1817]' : 'text-[#8A8580] hover:text-[#1A1817]'
-        }`}>
-          {t('dashboard.overview')}
-        </Link>
+        {isAdmin && (
+          <Link href="/overview" className={`text-xs uppercase tracking-[0.05em] transition-colors ${
+            pathname === '/overview' ? 'text-[#1A1817]' : 'text-[#8A8580] hover:text-[#1A1817]'
+          }`}>
+            {t('dashboard.overview')}
+          </Link>
+        )}
         <button 
           onClick={handleLogout}
           className="text-[#8A8580] text-xs uppercase tracking-[0.05em] hover:text-[#1A1817] transition-colors bg-transparent border-none cursor-pointer"

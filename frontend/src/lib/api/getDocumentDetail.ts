@@ -32,25 +32,6 @@ export async function getDocumentDetail(documentId: number, translations?: any, 
     }
 
     const result = await response.json();
-    console.log('=== GET DOCUMENT DETAIL ===');
-    console.log('Document ID:', documentId);
-    console.log('Full API response:', result);
-    
-    if (result.data) {
-      console.log('Document status:', result.data.status);
-      console.log('Raw uploadedAt:', result.data.uploadedAt);
-      console.log('Versions count:', result.data.versions?.length || 0);
-      
-      if (result.data.versions && result.data.versions.length > 0) {
-        console.log('All versions:', result.data.versions.map((v: any) => ({
-          versionNumber: v.versionNumber,
-          extractedAt: v.extractedAt,
-          processedBy: v.processedBy,
-          fieldsCount: v.fields?.length || 0
-        })));
-      }
-    }
-    console.log('========================');
 
     if (translations && result.data) {
       result.data = formatDocumentDates(result.data, translations, language);
