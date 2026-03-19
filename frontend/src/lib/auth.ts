@@ -92,7 +92,7 @@ export const setAuthCookie = (token: string) => {
   if (typeof window !== 'undefined') {
     const expires = new Date();
     expires.setTime(expires.getTime() + 24 * 60 * 60 * 1000);
-    document.cookie = `auth_token=${token}; path=/; expires=${expires.toUTCString()}; secure; samesite=strict`;
+    document.cookie = `auth_token=${token}; path=/; expires=${expires.toUTCString()}; samesite=lax`;
   }
 };
 
@@ -107,7 +107,7 @@ export const getAuthCookie = (): string | null => {
 
 export const removeAuthCookie = () => {
   if (typeof window !== 'undefined') {
-    document.cookie = 'auth_token=; path=/; max-age=0; secure; samesite=strict';
+    document.cookie = 'auth_token=; path=/; max-age=0; samesite=lax';
   }
 };
 
