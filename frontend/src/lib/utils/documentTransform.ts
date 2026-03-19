@@ -27,7 +27,7 @@ export function documentToFileData(doc: Document): FileData {
     switch (status.toLowerCase()) {
       case 'processed':
       case 'completed':
-        return 'paid';
+        return 'processed';
       case 'uploaded':
       case 'processing':
       case 'pending':

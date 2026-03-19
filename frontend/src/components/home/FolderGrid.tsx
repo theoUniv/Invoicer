@@ -149,15 +149,15 @@ export function FolderGrid({
 
   useEffect(() => {
     const fetchDocumentDetails = async () => {
-      const paidFiles = files.filter(file => 
-        file.status === 'paid' && 
+      const processedFiles = files.filter(file => 
+        file.status === 'processed' && 
         file.id !== '#000001' && 
         file.id !== '#000002' &&
         !extractedData.has(parseInt(file.id.replace('#', '')))
       );
 
-      if (paidFiles.length > 0) {
-        const promises = paidFiles.map(async (file) => {
+      if (processedFiles.length > 0) {
+        const promises = processedFiles.map(async (file) => {
           const documentId = parseInt(file.id.replace('#', ''));
           try {
             const detail = await getDocumentDetail(documentId, translations, currentLanguage);

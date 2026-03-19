@@ -88,11 +88,11 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const { t } = useAppTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'processed' | 'pending'>('all');
   const [dateFilter, setDateFilter] = useState<'thisMonth' | 'lastMonth' | 'yearToDate'>('thisMonth');
 
   const handleStatusFilterChange = (value: string) => {
-    const next = value as 'all' | 'paid' | 'pending';
+    const next = value as 'all' | 'processed' | 'pending';
     setStatusFilter(next);
     onStatusFilterChange?.(next);
   };
@@ -111,8 +111,8 @@ export function DashboardHeader({
       : filteredFiles.filter(file => {
           const raw = (file.status ?? '').toLowerCase();
 
-          if (statusFilter === 'paid') {
-            return raw === 'paid' || raw === 'processed' || raw === 'completed';
+          if (statusFilter === 'processed') {
+            return raw === 'processed' || raw === 'completed';
           }
 
           return raw === 'pending' || raw === 'uploaded' || raw === 'processing';
@@ -242,7 +242,7 @@ export function DashboardHeader({
           onChange={(e) => handleStatusFilterChange(e.target.value)}
         >
           <option value="all">{t('dashboard.allStatus')}</option>
-          <option value="paid">{t('dashboard.paid')}</option>
+          <option value="processed">{t('dashboard.processed')}</option>
           <option value="pending">{t('dashboard.pending')}</option>
         </select>
         <select

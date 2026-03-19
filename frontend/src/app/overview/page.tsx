@@ -32,7 +32,7 @@ export default function Overview() {
         setFiles(data.files);
         
         const processedFiles = data.files.filter(file => 
-          file.status === 'paid'
+          file.status === 'processed'
         );
         
         const extractedPromises = processedFiles.map(async (file) => {

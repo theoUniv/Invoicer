@@ -42,7 +42,7 @@ export function CTA() {
                 <div className="font-medium">{t('landing.cta.data.adobe.name')}</div>
                 <div className="text-[#7A7571] text-sm">{t('landing.cta.data.adobe.date')}</div>
                 <div className="font-['Playfair_Display'] text-lg">{t('landing.cta.data.adobe.amount')}</div>
-                <div><span className="inline-block px-3 py-1 text-[10px] uppercase tracking-[0.15em] rounded-full border border-[#1A1817] bg-[#1A1817] text-[#FAFAF9]">{t('landing.cta.paid')}</span></div>
+                <div><span className="inline-block px-3 py-1 text-[10px] uppercase tracking-[0.15em] rounded-full border border-[#1A1817] bg-[#1A1817] text-[#FAFAF9]">{t('landing.cta.processed')}</span></div>
               </div>
               
               <div className="grid grid-cols-4 py-4 border-b border-[#E2DDD8] items-center hover:bg-[#FCFBFA] transition-colors cursor-pointer opacity-50">

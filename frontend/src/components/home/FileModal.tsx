@@ -156,9 +156,9 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-bold text-[#6B6B66] tracking-widest mb-1">{t('dashboard.folders.fileStatus')}</span>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                  file.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                  file.status === 'processed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
                 }`}>
-                  {file.status === 'paid' ? t('dashboard.paid') : t('dashboard.pending')}
+                  {file.status === 'processed' ? t('dashboard.processed') : t('dashboard.pending')}
                 </span>
               </div>
             </div>

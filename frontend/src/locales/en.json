@@ -43,7 +43,7 @@
     "signOut": "Sign Out",
     "searchPlaceholder": "Search vendor or ID...",
     "allStatus": "All Status",
-    "paid": "Paid",
+    "processed": "Processed",
     "pending": "Pending",
     "thisMonth": "This Month",
     "lastMonth": "Last Month",
@@ -108,7 +108,7 @@
       "totalDocuments": "Total documents",
       "totalCompanies": "Unique companies",
       "totalAmount": "Total amount",
-      "paidInvoices": "Paid invoices",
+      "processedInvoices": "Processed invoices",
       "pendingInvoices": "Pending",
       "documents": "documents",
       "companies": "companies",
@@ -169,7 +169,7 @@
       "amount": "Amount",
       "status": "Status",
       "extracted": "Extracted",
-      "paid": "Paid",
+      "processed": "Processed",
       "processing": "Processing",
       "data": {
         "stripe": {
