@@ -81,9 +81,9 @@ services:
       - AIRFLOW_API_URL=http://airflow-webserver:8080/api/v1
       - AIRFLOW_API_USER=${AIRFLOW_ADMIN_USER:-admin}
       - AIRFLOW_API_PASS=${AIRFLOW_ADMIN_PASSWORD:-admin}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
     ports:
       - "3001:3001"
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
     depends_on:
       - db
       - minio
