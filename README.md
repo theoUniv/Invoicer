@@ -47,10 +47,10 @@ docker compose up -d --build
 ```
 
 ### Accès aux Services
-- **Frontend** : `http://votre-ip:3000`
-- **Backend API** : `http://votre-ip:3001`
-- **MinIO Console** : `http://votre-ip:9001` (User: `minioadmin` / Pass: `minioadmin123`)
-- **Airflow UI** : `http://votre-ip:8080`
+- **Frontend** : `http://72.60.37.180:3000`
+- **Backend API** : `http://72.60.37.180:3001`
+- **MinIO Console** : `http://72.60.37.180:9001` (User: `minioadmin` / Pass: `minioadmin123`)
+- **Airflow UI** : `http://72.60.37.180:8080`
 
 ## Structure du Repository
 
