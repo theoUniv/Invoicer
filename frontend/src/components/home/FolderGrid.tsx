@@ -165,7 +165,7 @@ export function FolderGrid({
         onClick: async () => {
           if (file.id !== '#000001' && file.id !== '#000002') {
             try {
-              const response = await fetch(`http://72.60.37.180:3001/api/documents/${file.id.replace('#', '')}/raw-file`);
+              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/documents/${file.id.replace('#', '')}/raw-file`);
               if (!response.ok) throw new Error('Download failed');
               
               const blob = await response.blob();
