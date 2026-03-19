@@ -1,7 +1,8 @@
-import { X, Download, Eye, History, User, Cpu, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Download, Eye, History, User, Cpu, ChevronDown, ChevronUp, Edit2, Save, XCircle } from 'lucide-react';
 import { FileData, getDocument, Document, DocumentVersion } from '@/lib/files';
 import { useAppTranslation } from '@/hooks/useTranslation';
 import { useState, useEffect } from 'react';
+import { createDocumentVersion } from '@/lib/services/filesService';
 
 interface FileModalProps {
   file: FileData | null;
@@ -15,16 +16,29 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
   const [fullDoc, setFullDoc] = useState<Document | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandedVersion, setExpandedVersion] = useState<number | null>(null);
+  
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableFields, setEditableFields] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  const fetchDoc = async (id: number) => {
+    setLoading(true);
+    try {
+      const doc = await getDocument(id);
+      setFullDoc(doc);
+    } catch (err) {
+      console.error('Error fetching full doc:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (file && file.id.startsWith('#')) {
       const numericId = parseInt(file.id.replace('#', ''), 10);
       if (!isNaN(numericId)) {
-        setLoading(true);
-        getDocument(numericId)
-          .then(setFullDoc)
-          .catch((err: any) => console.error('Error fetching full doc:', err))
-          .finally(() => setLoading(false));
+        fetchDoc(numericId);
       }
     }
   }, [file]);
@@ -59,6 +73,44 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
       }
     } else {
       alert('Document de démonstration - pas de fichier réel');
+    }
+  };
+
+  const handleStartEdit = (version: DocumentVersion) => {
+    const fieldsMap: Record<string, string> = {};
+    version.fields.forEach(f => {
+      fieldsMap[f.fieldName] = f.fieldValue || '';
+    });
+    setEditableFields(fieldsMap);
+    setIsEditing(true);
+    setExpandedVersion(0); // Force open the latest version being edited
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditableFields({});
+  };
+
+  const handleSaveEdit = async () => {
+    if (!fullDoc) return;
+    setIsSaving(true);
+    try {
+      const fieldsArray = Object.entries(editableFields).map(([fieldName, fieldValue]) => ({
+        fieldName,
+        fieldValue: fieldValue.trim() === '' ? null : fieldValue.trim()
+      }));
+      
+      await createDocumentVersion(fullDoc.documentId, fieldsArray);
+      setIsEditing(false);
+      setEditableFields({});
+      
+      // Refresh the document to show the new version
+      await fetchDoc(fullDoc.documentId);
+    } catch (err) {
+      console.error('Failed to save new version', err);
+      alert('Erreur lors de la création de la nouvelle version');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -125,56 +177,131 @@ export function FileModal({ file, onClose, onView, onDelete }: FileModalProps) {
             </div>
 
             <div className="space-y-3">
-              {fullDoc?.versions?.map((version, idx) => (
-                <div 
-                  key={version.versionId} 
-                  className="border border-[rgba(18,18,18,0.08)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
-                >
-                  <button 
-                    onClick={() => setExpandedVersion(expandedVersion === idx ? null : idx)}
-                    className="w-full flex items-center justify-between p-4 bg-white hover:bg-[#FDFDFB] transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#121212] text-white text-[10px] font-bold">
-                        V{version.versionNumber}
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-semibold text-[#121212]">
-                          {new Date(version.extractedAt).toLocaleString('fr-FR', {
-                            day: 'numeric', month: 'short', year: 'numeric',
-                            hour: '2-digit', minute: '2-digit'
-                          })}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          {version.processor ? (
-                            <><User className="w-3 h-3 text-[#6B6B66]" /><span className="text-[10px] text-[#6B6B66] font-medium">{version.processor.firstName} {version.processor.lastName}</span></>
-                          ) : (
-                            <><span className="text-[10px] text-[#6B6B66] font-medium">Traitement automatique</span></>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    {expandedVersion === idx ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </button>
+              {fullDoc?.versions?.map((version, idx) => {
+                const isLatest = idx === 0;
+                const isCurrentlyEditing = isEditing && isLatest;
 
-                  {expandedVersion === idx && (
-                    <div className="p-4 bg-[rgba(18,18,18,0.01)] border-t border-[rgba(18,18,18,0.06)] animate-in fade-in slide-in-from-top-2 duration-300">
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                        {version.fields.map(field => (
-                          <div key={field.fieldId} className="flex flex-col p-2 bg-white rounded-lg border border-[rgba(18,18,18,0.04)] shadow-sm">
-                            <span className="text-[9px] uppercase font-bold text-[#6B6B66] tracking-tighter mb-0.5">
-                              {field.fieldName.replace(/_/g, ' ')}
-                            </span>
-                            <span className="text-[11px] font-medium text-[#121212] truncate" title={field.fieldValue || '—'}>
-                              {field.fieldValue || '—'}
-                            </span>
+                return (
+                  <div 
+                    key={version.versionId} 
+                    className={`border rounded-xl overflow-hidden transition-shadow duration-200 ${
+                      isCurrentlyEditing 
+                        ? 'border-[#121212] shadow-md ring-1 ring-[#121212]/10' 
+                        : 'border-[rgba(18,18,18,0.08)] shadow-sm hover:shadow-md'
+                    }`}
+                  >
+                    <div className="w-full flex items-center justify-between p-4 bg-white transition-colors">
+                      <button 
+                        onClick={() => !isCurrentlyEditing && setExpandedVersion(expandedVersion === idx ? null : idx)}
+                        className={`flex items-center gap-4 flex-1 text-left ${isCurrentlyEditing ? 'cursor-default' : 'cursor-pointer hover:bg-[#FDFDFB]'}`}
+                      >
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-full text-[10px] font-bold ${
+                          isCurrentlyEditing ? 'bg-indigo-600 text-white shadow-inner' : 'bg-[#121212] text-white'
+                        }`}>
+                          V{version.versionNumber}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-[#121212]">
+                            {new Date(version.extractedAt).toLocaleString('fr-FR', {
+                              day: 'numeric', month: 'short', year: 'numeric',
+                              hour: '2-digit', minute: '2-digit'
+                            })}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            {version.processor ? (
+                              <><User className="w-3 h-3 text-[#6B6B66]" /><span className="text-[10px] text-[#6B6B66] font-medium">{version.processor.firstName} {version.processor.lastName}</span></>
+                            ) : (
+                              <><span className="text-[10px] text-[#6B6B66] font-medium">Traitement automatique</span></>
+                            )}
                           </div>
-                        ))}
+                        </div>
+                      </button>
+
+                      <div className="flex items-center gap-2">
+                        {isLatest && !isEditing && (
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleStartEdit(version); }}
+                            className="p-1.5 text-[#6B6B66] hover:text-[#121212] hover:bg-gray-100 rounded transition-colors flex items-center gap-1"
+                            title="Créer une correction"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                            <span className="text-[10px] uppercase font-bold tracking-wider hidden sm:inline">Modifier</span>
+                          </button>
+                        )}
+                        {!isCurrentlyEditing && (
+                          <button onClick={() => setExpandedVersion(expandedVersion === idx ? null : idx)} className="p-1.5 text-[#6B6B66] hover:bg-gray-100 rounded">
+                            {expandedVersion === idx ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {((expandedVersion === idx) || isCurrentlyEditing) && (
+                      <div className="p-4 bg-[rgba(18,18,18,0.01)] border-t border-[rgba(18,18,18,0.06)] animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                          {version.fields.map(field => {
+                            const originalValue = field.fieldValue || '';
+                            const currentValue = isCurrentlyEditing ? editableFields[field.fieldName] : originalValue;
+                            const isModified = isCurrentlyEditing && currentValue !== originalValue;
+
+                            return (
+                              <div key={field.fieldId} className={`flex flex-col p-2 bg-white rounded-lg border transition-colors shadow-sm ${
+                                isModified ? 'border-amber-400 bg-amber-50/30' : 'border-[rgba(18,18,18,0.04)]'
+                              }`}>
+                                <span className="text-[9px] uppercase font-bold text-[#6B6B66] tracking-tighter mb-0.5 flex justify-between">
+                                  {field.fieldName.replace(/_/g, ' ')}
+                                  {isModified && <span className="text-amber-600">Modifié</span>}
+                                </span>
+                                
+                                {isCurrentlyEditing ? (
+                                  <input 
+                                    type="text"
+                                    value={currentValue}
+                                    onChange={(e) => setEditableFields(prev => ({...prev, [field.fieldName]: e.target.value}))}
+                                    className={`text-[11px] font-medium text-[#121212] w-full bg-transparent outline-none focus:ring-1 focus:ring-amber-400 rounded px-1 -mx-1 py-0.5 transition-shadow ${
+                                      isModified ? 'text-amber-900' : ''
+                                    }`}
+                                    placeholder="—"
+                                  />
+                                ) : (
+                                  <span className="text-[11px] font-medium text-[#121212] truncate" title={originalValue || '—'}>
+                                    {originalValue || '—'}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {isCurrentlyEditing && (
+                          <div className="mt-4 pt-4 border-t border-[rgba(18,18,18,0.06)] flex items-center justify-end gap-2">
+                            <button
+                              onClick={handleCancelEdit}
+                              disabled={isSaving}
+                              className="px-3 py-1.5 text-xs font-bold text-[#6B6B66] hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1.5"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              Annuler
+                            </button>
+                            <button
+                              onClick={handleSaveEdit}
+                              disabled={isSaving}
+                              className="px-4 py-1.5 text-xs font-bold text-white bg-[#121212] hover:bg-[#2A2A2A] rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                            >
+                              {isSaving ? (
+                                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <Save className="w-3.5 h-3.5" />
+                              )}
+                              Enregistrer
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               {!loading && (!fullDoc?.versions || fullDoc.versions.length === 0) && (
                 <p className="text-center py-8 text-sm text-[#6B6B66] italic bg-[#F8F8F6] rounded-xl">Aucun historique disponible pour ce document.</p>
               )}
