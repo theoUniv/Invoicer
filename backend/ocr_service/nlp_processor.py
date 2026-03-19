@@ -47,6 +47,7 @@ def refine_entities(raw_text):
     Advanced parsing of the raw OCR text to extract all structured fields.
     """
     data = {
+        "type": "invoice",
         "invoice_number": None,
         "issue_date": None,
         "supplier": {"name": None, "siret": None, "tva": None, "address": None},
@@ -70,7 +71,10 @@ def refine_entities(raw_text):
             if i+1 < len(lines) and "Adresse" in lines[i+1]:
                 data["client"]["address"] = lines[i+1].split(":", 1)[1].strip()
 
-    inv_num = re.search(r"Numéro de facture\s*[:=]\s*([A-Z0-9-]+)", raw_text, re.IGNORECASE)
+    if re.search(r"\bDEVIS\b", raw_text, re.IGNORECASE) and not re.search(r"\bFACTURE\b", raw_text, re.IGNORECASE):
+        data["type"] = "devis"
+
+    inv_num = re.search(r"Numéro de\s*(?:facture|devis)\s*[:=]\s*([A-Z0-9-]+)", raw_text, re.IGNORECASE)
     if inv_num: data["invoice_number"] = inv_num.group(1)
 
     issue_date = re.search(r"Date d'émission\s*[:=]\s*(\d{4}-\d{2}-\d{2})", raw_text, re.IGNORECASE)
@@ -164,7 +168,7 @@ def main():
                 print(f"SIRET {siret} not found in companies table.")
 
         gold_data = {
-            "type": "invoice",
+            "type": refined_data.get("type", "invoice"),
             "invoice_number": refined_data["invoice_number"],
             "issue_date": refined_data["issue_date"],
             "supplier": refined_data["supplier"],
