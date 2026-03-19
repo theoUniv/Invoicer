@@ -12,16 +12,17 @@ const airflowApi = axios.create({
   },
 });
 
-async function triggerOcrPipeline(filePath) {
+async function triggerOcrPipeline(filePath, documentId = null) {
   if (!AIRFLOW_API_URL) {
     console.warn("AIRFLOW_API_URL not set, skipping DAG trigger.");
     return null;
   }
 
   try {
-    const response = await airflowApi.post("/dags/ocr_service_turbo_pipeline/dagRuns", {
+    const response = await airflowApi.post("/dags/ocr_service_pipeline/dagRuns", {
       conf: {
         file_path: filePath,
+        document_id: documentId,
       },
     });
     return response.data;

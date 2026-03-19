@@ -147,12 +147,10 @@ router.post(
       const baseName = crypto.randomUUID();
       const objectName = `${docType.name}/${yyyy}/${mm}/${baseName}${ext}`;
 
-      // 1. Upload to MinIO (as before)
       await minio.putObject(bucket, objectName, f.buffer, {
         "Content-Type": f.mimetype || "application/octet-stream",
       });
 
-      // 2. Save document in DB
       const doc = await prisma.document.create({
         data: {
           documentTypeId: resolvedTypeId,
@@ -166,21 +164,17 @@ router.post(
         },
       });
 
-      // 3. Save locally for Airflow access
       const tempDir = path.join(__dirname, "../../temp_uploads");
       if (!fsSync.existsSync(tempDir)) fsSync.mkdirSync(tempDir, { recursive: true });
-      
+
       const localPath = path.join(tempDir, `${baseName}${ext}`);
       await fs.writeFile(localPath, f.buffer);
 
-      // 4. Trigger Airflow DAG
-      // Path inside Airflow container: /opt/airflow/backend/temp_uploads/<filename>
       const airflowPath = `/opt/airflow/backend/temp_uploads/${baseName}${ext}`;
       try {
-        await triggerOcrPipeline(airflowPath);
+        await triggerOcrPipeline(airflowPath, doc.documentId);
       } catch (err) {
         console.error(`Failed to trigger DAG for ${originalName}:`, err.message);
-        // We continue anyway since the file is in MinIO/DB
       }
 
       created.push(doc);
